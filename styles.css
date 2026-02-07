@@ -109,6 +109,18 @@ body {
   color: var(--text);
 }
 
+.games-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.nav-game-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 0.25rem;
+}
+
 .hero {
   padding-top: 5.5rem;
   padding-bottom: 2.75rem;
@@ -177,6 +189,16 @@ h1 {
   color: var(--text);
   border-color: rgba(15, 23, 42, 0.16);
   background: rgba(255, 255, 255, 0.8);
+}
+
+.btn-icon {
+  gap: 0.45rem;
+}
+
+.btn-icon-image {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.2rem;
 }
 
 .stats {

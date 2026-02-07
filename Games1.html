@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asteroids</title>
+  <link rel="icon" href="asteroids-icon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --bg: #050505;
+      --line: #f2f2f2;
+      --glow: rgba(255, 255, 255, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #111 0%, var(--bg) 72%);
+      color: var(--line);
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    #app {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    #screen {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 100%;
+    }
+
+    #game {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: transparent;
+      filter: drop-shadow(0 0 5px var(--glow));
+    }
+
+    #screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.04) 0px,
+          rgba(255, 255, 255, 0.04) 1px,
+          transparent 2px,
+          transparent 4px
+        ),
+        radial-gradient(circle at center, transparent 45%, rgba(0, 0, 0, 0.45) 100%);
+      mix-blend-mode: screen;
+    }
+
+    #leaderboard-panel {
+      width: 320px;
+      height: 100%;
+      border-left: 2px solid rgba(242, 242, 242, 0.35);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.06);
+    }
+
+    #logo-panel {
+      border: 2px solid rgba(242, 242, 242, 0.7);
+      padding: 12px 10px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 100%);
+      box-shadow: 0 0 18px rgba(255, 255, 255, 0.15), inset 0 0 12px rgba(255, 255, 255, 0.08);
+    }
+
+    #logo-panel h1 {
+      font-size: 34px;
+      letter-spacing: 2px;
+      line-height: 1;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px var(--glow);
+    }
+
+    #logo-panel p {
+      font-size: 12px;
+      letter-spacing: 2px;
+      margin-top: 6px;
+      opacity: 0.85;
+    }
+
+    #leaderboard-panel h2 {
+      font-size: 22px;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    #leaderboard-panel label {
+      font-size: 14px;
+      opacity: 0.85;
+      letter-spacing: 1px;
+    }
+
+    #player-name {
+      width: 100%;
+      height: 38px;
+      border: 1px solid rgba(242, 242, 242, 0.65);
+      background: rgba(0, 0, 0, 0.55);
+      color: var(--line);
+      padding: 0 10px;
+      font: 700 18px/1 "Courier New", Courier, monospace;
+      text-transform: uppercase;
+      outline: none;
+    }
+
+    #player-name:focus {
+      border-color: #fff;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+
+    #leaderboard-note {
+      font-size: 13px;
+      opacity: 0.8;
+      line-height: 1.35;
+    }
+
+    #leaderboard-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+      flex: 1 1 auto;
+      margin-top: 2px;
+      padding-right: 4px;
+    }
+
+    .score-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1px dashed rgba(242, 242, 242, 0.2);
+      padding: 4px 0;
+      font-size: 16px;
+      letter-spacing: 0.3px;
+    }
+
+    .score-row.empty {
+      justify-content: flex-start;
+      opacity: 0.7;
+    }
+
+    .score-row.highlight {
+      text-shadow: 0 0 8px var(--glow);
+      color: #fff;
+    }
+
+    .score-rank {
+      opacity: 0.72;
+      margin-right: 8px;
+    }
+
+    .score-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1 1 auto;
+    }
+
+    .score-points {
+      flex: 0 0 auto;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    #leaderboard-status {
+      min-height: 18px;
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    @media (max-width: 980px) {
+      #app {
+        flex-direction: column;
+      }
+
+      #screen {
+        min-height: 260px;
+      }
+
+      #leaderboard-panel {
+        width: 100%;
+        height: 240px;
+        border-left: 0;
+        border-top: 2px solid rgba(242, 242, 242, 0.35);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="screen">
+      <canvas id="game" aria-label="Asteroids game canvas"></canvas>
+    </div>
+    <aside id="leaderboard-panel" aria-label="Top scores panel">
+      <section id="logo-panel" aria-label="BB Games logo panel">
+        <h1>BB Games</h1>
+        <p>ARCADE CLASSICS</p>
+      </section>
+      <h2>TOP SCORES</h2>
+      <label for="player-name">PLAYER NAME</label>
+      <input id="player-name" maxlength="12" autocomplete="nickname" spellcheck="false">
+      <p id="leaderboard-note">Score is posted automatically when a run ends.</p>
+      <ol id="leaderboard-list"></ol>
+      <p id="leaderboard-status" aria-live="polite"></p>
+    </aside>
+  </div>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById("game");
+      const screenElement = document.getElementById("screen");
+      const nameInput = document.getElementById("player-name");
+      const leaderboardList = document.getElementById("leaderboard-list");
+      const leaderboardStatus = document.getElementById("leaderboard-status");
+      const ctx = canvas.getContext("2d");
+
+      const TAU = Math.PI * 2;
+      const LEADERBOARD_LIMIT = 10;
+      const LEADERBOARD_STORAGE_KEY = "asteroidsLeaderboard";
+      const PLAYER_NAME_STORAGE_KEY = "asteroidsPlayerName";
+
+      const CONFIG = {
+        shipSize: 20,
+        shipTurnSpeed: Math.PI * 1.9,
+        shipAcceleration: 260,
+        shipDrag: 0.985,
+        invulnerabilityTime: 2.25,
+        fireCooldown: 0.15,
+        maxBullets: 6,
+        bulletSpeed: 560,
+        bulletLifetime: 0.85,
+        asteroidStartCount: 4,
+        asteroidSpeedBase: 28,
+        asteroidSpeedPerLevel: 5,
+        asteroidJaggedness: 0.42,
+        scoreLarge: 20,
+        scoreMedium: 50,
+        scoreSmall: 100
+      };
+
+      let width = 1280;
+      let height = 720;
+      let previousTime = performance.now();
+
+      const keys = new Set();
+      const stars = [];
+      const bullets = [];
+      const asteroids = [];
+      const particles = [];
+
+      let leaderboard = loadLeaderboard();
+      let highScore = Math.max(
+        Number(localStorage.getItem("asteroidsHighScore") || 0),
+        leaderboard.length ? leaderboard[0].score : 0
+      );
+      let playerName = sanitizeName(localStorage.getItem(PLAYER_NAME_STORAGE_KEY) || "") || "PLAYER";
+      let score = 0;
+      let level = 1;
+      let lives = 3;
+      let gameState = "start";
+      let messageTimer = 0;
+      let respawnTimer = 0;
+      let shootTimer = 0;
+      let hasSubmittedGameOverScore = false;
+      let ship = null;
+
+      function sanitizeName(value) {
+        return String(value || "")
+          .toUpperCase()
+          .replace(/[^A-Z0-9 ]+/g, "")
+          .trim()
+          .slice(0, 12);
+      }
+
+      function loadLeaderboard() {
+        let parsed = [];
+        try {
+          parsed = JSON.parse(localStorage.getItem(LEADERBOARD_STORAGE_KEY) || "[]");
+        } catch {
+          parsed = [];
+        }
+
+        if (!Array.isArray(parsed)) return [];
+
+        return parsed
+          .map((entry, index) => {
+            const name = sanitizeName(entry && entry.name) || "PLAYER";
+            const points = Math.max(0, Math.floor(Number(entry && entry.score) || 0));
+            const timestamp = Number(entry && entry.timestamp) || Date.now() + index;
+            return {
+              id: String((entry && entry.id) || `legacy-${index}-${timestamp}`),
+              name,
+              score: points,
+              timestamp
+            };
+          })
+          .sort((a, b) => b.score - a.score || a.timestamp - b.timestamp)
+          .slice(0, LEADERBOARD_LIMIT);
+      }
+
+      function saveLeaderboard() {
+        localStorage.setItem(LEADERBOARD_STORAGE_KEY, JSON.stringify(leaderboard));
+      }
+
+      function setLeaderboardStatus(message) {
+        leaderboardStatus.textContent = message;
+      }
+
+      function renderLeaderboard(highlightId = "") {
+        leaderboardList.textContent = "";
+        if (leaderboard.length === 0) {
+          const row = document.createElement("li");
+          row.className = "score-row empty";
+          row.textContent = "NO SCORES YET";
+          leaderboardList.appendChild(row);
+          return;
+        }
+
+        for (let i = 0; i < leaderboard.length; i += 1) {
+          const entry = leaderboard[i];
+          const row = document.createElement("li");
+          row.className = "score-row";
+          if (entry.id === highlightId) row.classList.add("highlight");
+
+          const rank = document.createElement("span");
+          rank.className = "score-rank";
+          rank.textContent = String(i + 1).padStart(2, "0");
+
+          const name = document.createElement("span");
+          name.className = "score-name";
+          name.textContent = entry.name;
+
+          const points = document.createElement("span");
+          points.className = "score-points";
+          points.textContent = String(entry.score).padStart(5, "0");
+
+          row.append(rank, name, points);
+          leaderboardList.appendChild(row);
+        }
+      }
+
+      function storePlayerName(inputValue) {
+        const cleaned = sanitizeName(inputValue);
+        playerName = cleaned || "PLAYER";
+        nameInput.value = playerName;
+        localStorage.setItem(PLAYER_NAME_STORAGE_KEY, playerName);
+      }
+
+      function submitScoreToLeaderboard(points) {
+        const finalScore = Math.max(0, Math.floor(points));
+        if (finalScore <= 0) {
+          setLeaderboardStatus("Score must be above 0 to enter the top board.");
+          return;
+        }
+
+        const entry = {
+          id: `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+          name: playerName,
+          score: finalScore,
+          timestamp: Date.now()
+        };
+
+        leaderboard.push(entry);
+        leaderboard.sort((a, b) => b.score - a.score || a.timestamp - b.timestamp);
+        leaderboard = leaderboard.slice(0, LEADERBOARD_LIMIT);
+
+        const madeBoard = leaderboard.some((item) => item.id === entry.id);
+        saveLeaderboard();
+        renderLeaderboard(madeBoard ? entry.id : "");
+
+        if (madeBoard) {
+          setLeaderboardStatus(`${entry.name} posted ${entry.score} points.`);
+        } else {
+          setLeaderboardStatus(`${entry.name} scored ${entry.score}, not top ${LEADERBOARD_LIMIT}.`);
+        }
+      }
+
+      function resize() {
+        const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+        const bounds = screenElement.getBoundingClientRect();
+        width = Math.max(320, Math.floor(bounds.width));
+        height = Math.max(240, Math.floor(bounds.height));
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        createStarfield();
+      }
+
+      function randomRange(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function wrapPosition(body) {
+        if (body.x < 0) body.x += width;
+        if (body.x > width) body.x -= width;
+        if (body.y < 0) body.y += height;
+        if (body.y > height) body.y -= height;
+      }
+
+      function makeShip(x, y) {
+        return {
+          x,
+          y,
+          vx: 0,
+          vy: 0,
+          angle: -Math.PI / 2,
+          alive: true,
+          invulnerable: CONFIG.invulnerabilityTime
+        };
+      }
+
+      function makeAsteroid(x, y, sizeTier) {
+        const radiusByTier = [52, 30, 16];
+        const radius = radiusByTier[sizeTier];
+        const points = Math.floor(randomRange(8, 13));
+        const offsets = [];
+        for (let i = 0; i < points; i += 1) {
+          offsets.push(randomRange(1 - CONFIG.asteroidJaggedness, 1 + CONFIG.asteroidJaggedness));
+        }
+        const speedBase = CONFIG.asteroidSpeedBase + level * CONFIG.asteroidSpeedPerLevel;
+        const speed = randomRange(speedBase * 0.45, speedBase * (1.2 + sizeTier * 0.25));
+        const angle = randomRange(0, TAU);
+        return {
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          angle: randomRange(0, TAU),
+          spin: randomRange(-0.7, 0.7),
+          sizeTier,
+          radius,
+          points,
+          offsets
+        };
+      }
+
+      function spawnAsteroidWave() {
+        asteroids.length = 0;
+        const count = CONFIG.asteroidStartCount + level - 1;
+        for (let i = 0; i < count; i += 1) {
+          let x = 0;
+          let y = 0;
+          let attempts = 0;
+          do {
+            x = randomRange(0, width);
+            y = randomRange(0, height);
+            attempts += 1;
+          } while (
+            ship &&
+            Math.hypot(x - ship.x, y - ship.y) < 180 &&
+            attempts < 100
+          );
+          asteroids.push(makeAsteroid(x, y, 0));
+        }
+      }
+
+      function spawnExplosion(x, y, magnitude) {
+        const count = Math.floor(14 + magnitude * 5);
+        for (let i = 0; i < count; i += 1) {
+          const angle = randomRange(0, TAU);
+          const speed = randomRange(40, 210 + magnitude * 60);
+          particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: randomRange(0.25, 0.8),
+            maxLife: 1
+          });
+        }
+      }
+
+      function resetGame() {
+        score = 0;
+        level = 1;
+        lives = 3;
+        bullets.length = 0;
+        particles.length = 0;
+        hasSubmittedGameOverScore = false;
+        ship = makeShip(width * 0.5, height * 0.5);
+        spawnAsteroidWave();
+        messageTimer = 2;
+        respawnTimer = 0;
+        shootTimer = 0;
+        gameState = "playing";
+      }
+
+      function splitAsteroid(index) {
+        const asteroid = asteroids[index];
+        if (!asteroid) return;
+        const tier = asteroid.sizeTier;
+
+        if (tier === 0) score += CONFIG.scoreLarge;
+        else if (tier === 1) score += CONFIG.scoreMedium;
+        else score += CONFIG.scoreSmall;
+
+        spawnExplosion(asteroid.x, asteroid.y, 0.65 + (2 - tier) * 0.25);
+
+        if (tier < 2) {
+          const nextTier = tier + 1;
+          const childA = makeAsteroid(asteroid.x, asteroid.y, nextTier);
+          const childB = makeAsteroid(asteroid.x, asteroid.y, nextTier);
+
+          childA.vx += asteroid.vx * 0.25;
+          childA.vy += asteroid.vy * 0.25;
+          childB.vx -= asteroid.vx * 0.25;
+          childB.vy -= asteroid.vy * 0.25;
+
+          asteroids.push(childA, childB);
+        }
+
+        asteroids.splice(index, 1);
+      }
+
+      function killShip() {
+        if (!ship || !ship.alive) return;
+        spawnExplosion(ship.x, ship.y, 1.5);
+        ship.alive = false;
+        lives -= 1;
+
+        if (lives < 0) {
+          gameState = "gameover";
+          messageTimer = 0;
+          if (score > highScore) {
+            highScore = score;
+            localStorage.setItem("asteroidsHighScore", String(highScore));
+          }
+          if (!hasSubmittedGameOverScore) {
+            submitScoreToLeaderboard(score);
+            hasSubmittedGameOverScore = true;
+          }
+          return;
+        }
+
+        respawnTimer = 1.75;
+      }
+
+      function tryRespawn() {
+        if (ship && ship.alive) return;
+        if (respawnTimer > 0) return;
+
+        const safe = asteroids.every((a) => Math.hypot(a.x - width * 0.5, a.y - height * 0.5) > 140);
+        if (!safe) return;
+        ship = makeShip(width * 0.5, height * 0.5);
+      }
+
+      function fireBullet() {
+        if (!ship || !ship.alive) return;
+        if (shootTimer > 0 || bullets.length >= CONFIG.maxBullets) return;
+
+        const nx = Math.cos(ship.angle);
+        const ny = Math.sin(ship.angle);
+        bullets.push({
+          x: ship.x + nx * CONFIG.shipSize,
+          y: ship.y + ny * CONFIG.shipSize,
+          vx: ship.vx + nx * CONFIG.bulletSpeed,
+          vy: ship.vy + ny * CONFIG.bulletSpeed,
+          life: CONFIG.bulletLifetime
+        });
+        shootTimer = CONFIG.fireCooldown;
+      }
+
+      function hyperspace() {
+        if (!ship || !ship.alive) return;
+        ship.x = randomRange(0, width);
+        ship.y = randomRange(0, height);
+        ship.vx *= 0.35;
+        ship.vy *= 0.35;
+      }
+
+      function createStarfield() {
+        stars.length = 0;
+        const amount = Math.floor((width * height) / 5200);
+        for (let i = 0; i < amount; i += 1) {
+          stars.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            brightness: randomRange(0.2, 0.95),
+            size: Math.random() < 0.85 ? 1 : 2
+          });
+        }
+      }
+
+      function update(dt) {
+        if (gameState === "start" || gameState === "gameover") return;
+
+        messageTimer = Math.max(0, messageTimer - dt);
+        shootTimer = Math.max(0, shootTimer - dt);
+        respawnTimer = Math.max(0, respawnTimer - dt);
+
+        if (ship && ship.alive) {
+          let turn = 0;
+          if (keys.has("ArrowLeft") || keys.has("KeyA")) turn -= 1;
+          if (keys.has("ArrowRight") || keys.has("KeyD")) turn += 1;
+          ship.angle += turn * CONFIG.shipTurnSpeed * dt;
+
+          if (keys.has("ArrowUp") || keys.has("KeyW")) {
+            const ax = Math.cos(ship.angle) * CONFIG.shipAcceleration;
+            const ay = Math.sin(ship.angle) * CONFIG.shipAcceleration;
+            ship.vx += ax * dt;
+            ship.vy += ay * dt;
+          }
+
+          const drag = Math.pow(CONFIG.shipDrag, dt * 60);
+          ship.vx *= drag;
+          ship.vy *= drag;
+          ship.x += ship.vx * dt;
+          ship.y += ship.vy * dt;
+          wrapPosition(ship);
+
+          ship.invulnerable = Math.max(0, ship.invulnerable - dt);
+        } else {
+          tryRespawn();
+        }
+
+        for (let i = bullets.length - 1; i >= 0; i -= 1) {
+          const bullet = bullets[i];
+          bullet.x += bullet.vx * dt;
+          bullet.y += bullet.vy * dt;
+          wrapPosition(bullet);
+          bullet.life -= dt;
+          if (bullet.life <= 0) bullets.splice(i, 1);
+        }
+
+        for (const asteroid of asteroids) {
+          asteroid.x += asteroid.vx * dt;
+          asteroid.y += asteroid.vy * dt;
+          asteroid.angle += asteroid.spin * dt;
+          wrapPosition(asteroid);
+        }
+
+        for (let i = particles.length - 1; i >= 0; i -= 1) {
+          const p = particles[i];
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vx *= 0.985;
+          p.vy *= 0.985;
+          p.life -= dt;
+          if (p.life <= 0) particles.splice(i, 1);
+        }
+
+        for (let bi = bullets.length - 1; bi >= 0; bi -= 1) {
+          const b = bullets[bi];
+          let hit = false;
+          for (let ai = asteroids.length - 1; ai >= 0; ai -= 1) {
+            const a = asteroids[ai];
+            if (Math.hypot(b.x - a.x, b.y - a.y) <= a.radius) {
+              bullets.splice(bi, 1);
+              splitAsteroid(ai);
+              hit = true;
+              break;
+            }
+          }
+          if (hit) continue;
+        }
+
+        if (ship && ship.alive && ship.invulnerable <= 0) {
+          for (const asteroid of asteroids) {
+            if (Math.hypot(ship.x - asteroid.x, ship.y - asteroid.y) < asteroid.radius + CONFIG.shipSize * 0.55) {
+              killShip();
+              break;
+            }
+          }
+        }
+
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem("asteroidsHighScore", String(highScore));
+        }
+
+        if (asteroids.length === 0) {
+          level += 1;
+          messageTimer = 1.5;
+          spawnAsteroidWave();
+        }
+      }
+
+      function drawShip() {
+        if (!ship || !ship.alive) return;
+
+        const flicker = ship.invulnerable > 0 && Math.floor(performance.now() / 80) % 2 === 0;
+        if (flicker) return;
+
+        const s = CONFIG.shipSize;
+        const a = ship.angle;
+        const x = ship.x;
+        const y = ship.y;
+        const noseX = x + Math.cos(a) * s;
+        const noseY = y + Math.sin(a) * s;
+        const leftX = x + Math.cos(a + 2.48) * s * 0.9;
+        const leftY = y + Math.sin(a + 2.48) * s * 0.9;
+        const rightX = x + Math.cos(a - 2.48) * s * 0.9;
+        const rightY = y + Math.sin(a - 2.48) * s * 0.9;
+
+        ctx.beginPath();
+        ctx.moveTo(noseX, noseY);
+        ctx.lineTo(leftX, leftY);
+        ctx.lineTo(x + Math.cos(a + Math.PI) * s * 0.38, y + Math.sin(a + Math.PI) * s * 0.38);
+        ctx.lineTo(rightX, rightY);
+        ctx.closePath();
+        ctx.stroke();
+
+        if (keys.has("ArrowUp") || keys.has("KeyW")) {
+          const flameX = x + Math.cos(a + Math.PI) * s * 1.08;
+          const flameY = y + Math.sin(a + Math.PI) * s * 1.08;
+          const spread = s * randomRange(0.42, 0.64);
+          const leftFlameX = x + Math.cos(a + 2.85) * spread;
+          const leftFlameY = y + Math.sin(a + 2.85) * spread;
+          const rightFlameX = x + Math.cos(a - 2.85) * spread;
+          const rightFlameY = y + Math.sin(a - 2.85) * spread;
+          ctx.beginPath();
+          ctx.moveTo(leftFlameX, leftFlameY);
+          ctx.lineTo(flameX, flameY);
+          ctx.lineTo(rightFlameX, rightFlameY);
+          ctx.stroke();
+        }
+      }
+
+      function drawAsteroid(a) {
+        ctx.beginPath();
+        for (let i = 0; i < a.points; i += 1) {
+          const angle = a.angle + (i / a.points) * TAU;
+          const radius = a.radius * a.offsets[i];
+          const px = a.x + Math.cos(angle) * radius;
+          const py = a.y + Math.sin(angle) * radius;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.stroke();
+      }
+
+      function drawBullets() {
+        for (const bullet of bullets) {
+          ctx.beginPath();
+          ctx.arc(bullet.x, bullet.y, 1.8, 0, TAU);
+          ctx.fill();
+        }
+      }
+
+      function drawParticles() {
+        for (const p of particles) {
+          const alpha = Math.max(0, p.life / p.maxLife);
+          ctx.globalAlpha = alpha;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x - p.vx * 0.015, p.y - p.vy * 0.015);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      function drawHUD() {
+        ctx.font = "24px Courier New, monospace";
+        ctx.textBaseline = "top";
+        ctx.textAlign = "left";
+        ctx.fillText(`SCORE ${String(score).padStart(5, "0")}`, 24, 18);
+
+        ctx.textAlign = "center";
+        ctx.fillText(`HIGH ${String(highScore).padStart(5, "0")}`, width / 2, 18);
+
+        ctx.textAlign = "right";
+        ctx.fillText(`LEVEL ${level}`, width - 24, 18);
+
+        const lifeX = width - 24;
+        const lifeY = 54;
+        for (let i = 0; i < Math.max(0, lives); i += 1) {
+          const x = lifeX - i * 24;
+          ctx.beginPath();
+          ctx.moveTo(x, lifeY);
+          ctx.lineTo(x - 9, lifeY + 13);
+          ctx.lineTo(x + 9, lifeY + 13);
+          ctx.closePath();
+          ctx.stroke();
+        }
+      }
+
+      function drawMessages() {
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        if (gameState === "start") {
+          ctx.font = "48px Courier New, monospace";
+          ctx.fillText("ASTEROIDS", width * 0.5, height * 0.42);
+          ctx.font = "22px Courier New, monospace";
+          ctx.fillText("PRESS ENTER TO START", width * 0.5, height * 0.52);
+          ctx.font = "18px Courier New, monospace";
+          ctx.fillText("ARROWS/WASD MOVE  •  SPACE FIRE  •  SHIFT HYPERSPACE", width * 0.5, height * 0.59);
+          ctx.font = "16px Courier New, monospace";
+          ctx.fillText("SET YOUR NAME IN THE TOP SCORES PANEL", width * 0.5, height * 0.65);
+          return;
+        }
+
+        if (gameState === "gameover") {
+          ctx.font = "46px Courier New, monospace";
+          ctx.fillText("GAME OVER", width * 0.5, height * 0.45);
+          ctx.font = "20px Courier New, monospace";
+          ctx.fillText("PRESS ENTER TO RESTART", width * 0.5, height * 0.54);
+          return;
+        }
+
+        if (messageTimer > 0) {
+          ctx.globalAlpha = Math.min(1, messageTimer * 1.6);
+          ctx.font = "30px Courier New, monospace";
+          ctx.fillText(`WAVE ${level}`, width * 0.5, height * 0.46);
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      function drawStarfield() {
+        for (const star of stars) {
+          ctx.globalAlpha = star.brightness;
+          ctx.fillRect(star.x, star.y, star.size, star.size);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        ctx.strokeStyle = "#f2f2f2";
+        ctx.fillStyle = "#f2f2f2";
+        ctx.lineWidth = 2;
+        ctx.lineJoin = "round";
+
+        drawStarfield();
+        drawParticles();
+        for (const asteroid of asteroids) drawAsteroid(asteroid);
+        drawBullets();
+        drawShip();
+        drawHUD();
+        drawMessages();
+      }
+
+      function frame(now) {
+        const dt = Math.min(0.033, (now - previousTime) / 1000);
+        previousTime = now;
+        update(dt);
+        draw();
+        requestAnimationFrame(frame);
+      }
+
+      function isTypingTarget(target) {
+        return target instanceof HTMLElement && (target.tagName === "INPUT" || target.tagName === "TEXTAREA");
+      }
+
+      function onKeyDown(event) {
+        if (isTypingTarget(event.target)) return;
+        const { code } = event;
+        keys.add(code);
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(code)) {
+          event.preventDefault();
+        }
+
+        if (code === "Enter" && (gameState === "start" || gameState === "gameover")) {
+          resetGame();
+          return;
+        }
+
+        if (gameState !== "playing") return;
+
+        if (code === "Space") fireBullet();
+        if (code === "ShiftLeft" || code === "ShiftRight") hyperspace();
+      }
+
+      function onKeyUp(event) {
+        keys.delete(event.code);
+      }
+
+      nameInput.addEventListener("input", () => {
+        const cleaned = sanitizeName(nameInput.value);
+        if (cleaned !== nameInput.value) nameInput.value = cleaned;
+        playerName = cleaned || "PLAYER";
+        localStorage.setItem(PLAYER_NAME_STORAGE_KEY, playerName);
+      });
+
+      nameInput.addEventListener("blur", () => {
+        storePlayerName(nameInput.value);
+      });
+
+      window.addEventListener("resize", resize);
+      window.addEventListener("keydown", onKeyDown, { passive: false });
+      window.addEventListener("keyup", onKeyUp);
+
+      storePlayerName(playerName);
+      renderLeaderboard();
+      setLeaderboardStatus("Enter a name, then press Enter to start.");
+      resize();
+      createStarfield();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
