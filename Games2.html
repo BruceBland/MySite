@@ -1,0 +1,1664 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Space Invaders (Arcade-Style)</title>
+  <style>
+    :root {
+      --bg: #040404;
+      --frame: #1f1f1f;
+      --text: #e8e8e8;
+      --green: #7cff7c;
+      --red: #ff5a5a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 20% 10%, #121212 0%, #060606 45%, #020202 100%);
+      color: var(--text);
+      font-family: "Courier New", monospace;
+    }
+
+    .layout {
+      width: min(98vw, 1040px);
+      display: grid;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .cabinet {
+      width: 100%;
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 672px;
+      image-rendering: pixelated;
+      border: 4px solid var(--frame);
+      background: #000;
+      box-shadow: 0 0 0 2px #000, 0 0 32px rgba(124, 255, 124, 0.08);
+    }
+
+    .hint {
+      font-size: 14px;
+      text-align: center;
+      opacity: 0.9;
+      letter-spacing: 0.4px;
+    }
+
+    .side-panel {
+      border: 2px solid #2b2b2b;
+      background: linear-gradient(180deg, #121212 0%, #080808 100%);
+      border-radius: 10px;
+      padding: 14px;
+      width: 100%;
+    }
+
+    .bb-logo {
+      margin: 0 0 12px;
+      border: 2px solid #2a3e2a;
+      border-radius: 10px;
+      padding: 10px 10px 8px;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(124, 255, 124, 0.2) 0%, rgba(124, 255, 124, 0) 60%),
+        linear-gradient(160deg, #162116 0%, #0b120b 60%, #060606 100%);
+      text-align: center;
+      box-shadow: inset 0 0 0 1px rgba(124, 255, 124, 0.15);
+    }
+
+    .bb-logo .brand {
+      display: block;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      line-height: 1;
+      color: #e5ffe5;
+      text-shadow: 0 0 10px rgba(124, 255, 124, 0.35);
+    }
+
+    .bb-logo .sub {
+      display: block;
+      margin-top: 4px;
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      color: #9ad59a;
+    }
+
+    .side-panel h2 {
+      margin: 0 0 10px;
+      color: var(--green);
+      font-size: 18px;
+      letter-spacing: 1px;
+    }
+
+    .name-form {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .name-form label {
+      font-size: 13px;
+      opacity: 0.9;
+      letter-spacing: 0.6px;
+    }
+
+    .name-form input,
+    .name-form button {
+      appearance: none;
+      border: 2px solid #2f2f2f;
+      background: #101010;
+      color: var(--text);
+      font: inherit;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    .name-form input {
+      text-transform: uppercase;
+    }
+
+    .name-form button {
+      cursor: pointer;
+      background: #152315;
+      border-color: #255b25;
+      color: #d6ffd6;
+    }
+
+    .name-form button:active {
+      transform: translateY(1px);
+    }
+
+    .name-status {
+      min-height: 18px;
+      font-size: 12px;
+      color: #d4d4d4;
+      opacity: 0.95;
+      letter-spacing: 0.2px;
+    }
+
+    .name-status.error {
+      color: #ff9f9f;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin: 6px 0 10px;
+      border: 2px solid #2f2f2f;
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: #111;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: background-color 120ms ease, border-color 120ms ease;
+    }
+
+    .home-link:hover {
+      background: #1a1a1a;
+      border-color: #3a3a3a;
+    }
+
+    .home-link:focus-visible {
+      outline: none;
+      border-color: #7cff7c;
+      box-shadow: 0 0 0 1px rgba(124, 255, 124, 0.35);
+    }
+
+    .leaderboard-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 4px;
+      font-size: 13px;
+    }
+
+    .leaderboard-list li {
+      display: grid;
+      grid-template-columns: 26px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      border-bottom: 1px dotted #2f2f2f;
+      padding-bottom: 3px;
+    }
+
+    .leaderboard-list .rank {
+      color: #8a8a8a;
+    }
+
+    .leaderboard-list .name {
+      color: #dfffdc;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .leaderboard-list .score {
+      color: #f5f5f5;
+    }
+
+    .rules-panel {
+      margin-top: 10px;
+      border-top: 1px solid #2a2a2a;
+      padding-top: 8px;
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .rules-panel h3 {
+      margin: 0;
+      color: #b9fdb9;
+      font-size: 12px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .rules-panel ul {
+      margin: 0;
+      padding-left: 16px;
+      color: #dddddd;
+      display: grid;
+      gap: 2px;
+    }
+
+    .rules-panel .score-list li {
+      color: #ececec;
+    }
+
+    .controls {
+      width: min(520px, 100%);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mobile-actions {
+      width: min(520px, 100%);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .controls button {
+      appearance: none;
+      border: 2px solid #2f2f2f;
+      background: #111;
+      color: var(--text);
+      padding: 10px 8px;
+      font: inherit;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      border-radius: 8px;
+      touch-action: manipulation;
+    }
+
+    .mobile-actions button {
+      appearance: none;
+      border: 2px solid #2f2f2f;
+      background: #10161f;
+      color: var(--text);
+      padding: 10px 8px;
+      font: inherit;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      border-radius: 8px;
+      touch-action: manipulation;
+    }
+
+    .controls button:active {
+      transform: translateY(1px);
+      background: #191919;
+    }
+
+    .mobile-actions button:active {
+      transform: translateY(1px);
+      background: #162033;
+    }
+
+    @media (min-width: 980px) {
+      .layout {
+        grid-template-columns: minmax(640px, 1fr) 280px;
+      }
+    }
+
+    @media (hover: hover) and (pointer: fine) and (min-width: 860px) {
+      .controls {
+        display: none;
+      }
+
+      .mobile-actions {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="cabinet">
+      <canvas id="game" aria-label="Space Invaders" role="img"></canvas>
+      <div class="hint">Move: Arrow/A-D or LEFT/RIGHT buttons. Fire: Space/FIRE. Pause: P/PAUSE.</div>
+      <div class="controls" aria-label="Touch controls">
+        <button id="leftBtn" type="button">LEFT</button>
+        <button id="fireBtn" type="button">FIRE</button>
+        <button id="rightBtn" type="button">RIGHT</button>
+      </div>
+      <div class="mobile-actions" aria-label="Touch start and pause controls">
+        <button id="startTouchBtn" type="button">START</button>
+        <button id="pauseTouchBtn" type="button">PAUSE</button>
+      </div>
+    </div>
+    <aside class="side-panel" aria-label="Player setup and leaderboard">
+      <div class="bb-logo" aria-label="BB Games logo">
+        <span class="brand">BB GAMES</span>
+        <span class="sub">SPACE INVADERS ARCADE</span>
+      </div>
+      <h2>TOP 5 SCORES</h2>
+      <form id="startForm" class="name-form">
+        <label for="playerName">PILOT NAME</label>
+        <input id="playerName" name="playerName" maxlength="12" autocomplete="off" placeholder="ENTER NAME" />
+        <button id="startBtn" type="submit">SET NAME</button>
+      </form>
+      <div id="nameStatus" class="name-status">Enter your name to start.</div>
+      <a class="home-link" href="index.html">Back to Home</a>
+      <ol id="leaderboardList" class="leaderboard-list" aria-live="polite"></ol>
+      <section class="rules-panel" aria-label="Rules and scoring">
+        <h3>Rules</h3>
+        <ul>
+          <li>Move with A/D or arrow keys.</li>
+          <li>Tap FIRE or press Space (one shot at a time).</li>
+          <li>Destroy invaders before they reach you.</li>
+          <li>You lose a life when hit by enemy fire.</li>
+        </ul>
+        <h3>Scoring</h3>
+        <ul class="score-list">
+          <li>Squid invader: 30 points</li>
+          <li>Crab invader: 20 points</li>
+          <li>Octo invader: 10 points</li>
+          <li>Mystery UFO: 50 to 300 points</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    (() => {
+      const GAME_W = 224;
+      const GAME_H = 256;
+      const SCALE = 3;
+
+      const COLORS = {
+        bg: '#000000',
+        hud: '#f1f1f1',
+        playfield: '#7cff7c',
+        bullet: '#ffffff',
+        ufo: '#ff5a5a',
+        bunker: '#7cff7c',
+        warning: '#ff9f43'
+      };
+
+      const INVADER_W = 12;
+      const INVADER_H = 8;
+      const PLAYER_W = 13;
+      const PLAYER_H = 8;
+      const UFO_W = 16;
+      const UFO_H = 7;
+
+      const INVADER_SCORE_BY_ROW = [30, 20, 20, 10, 10];
+      const UFO_SCORE_TABLE = [100, 50, 50, 100, 150, 100, 100, 50, 300, 100, 50, 100, 150, 100, 50];
+      const HI_SCORE_KEY = 'space_invaders_hi_score';
+      const LEADERBOARD_KEY = 'space_invaders_leaderboard_v1';
+      const PLAYER_NAME_KEY = 'space_invaders_player_name';
+      const MAX_LEADERBOARD_ENTRIES = 5;
+
+      const BUNKER_TEMPLATE = [
+        '000000111111111111000000',
+        '000011111111111111110000',
+        '000111111111111111111000',
+        '001111111111111111111100',
+        '011111111111111111111110',
+        '111111111111111111111111',
+        '111111111111111111111111',
+        '111111111111111111111111',
+        '111111110000000011111111',
+        '111111100000000001111111',
+        '111111000000000000111111',
+        '111110000000000000011111',
+        '111110000000000000011111',
+        '111110000000000000011111',
+        '111110000000000000011111',
+        '111110000000000000011111'
+      ];
+
+      const SPRITES = {
+        player: [
+          '0000011100000',
+          '0001111110000',
+          '0011111111000',
+          '0111111111100',
+          '1111111111110',
+          '1111111111110',
+          '0011101110000',
+          '0111000111000'
+        ],
+        ufo: [
+          '0011111111111100',
+          '0111111111111110',
+          '1110011111100111',
+          '1111111111111111',
+          '0011111111111100',
+          '0001100110011000',
+          '0011000000001100'
+        ],
+        invaders: {
+          squid: [
+            [
+              '000110011000',
+              '001111111100',
+              '011011110110',
+              '111111111111',
+              '001111111100',
+              '011001100110',
+              '110110011011',
+              '000110011000'
+            ],
+            [
+              '000110011000',
+              '001111111100',
+              '011011110110',
+              '111111111111',
+              '001111111100',
+              '011001100110',
+              '000110011000',
+              '001001100100'
+            ]
+          ],
+          crab: [
+            [
+              '000011110000',
+              '001111111100',
+              '011011110110',
+              '111111111111',
+              '110111111011',
+              '111111111111',
+              '001100001100',
+              '011000000110'
+            ],
+            [
+              '000011110000',
+              '001111111100',
+              '011011110110',
+              '111111111111',
+              '110111111011',
+              '111111111111',
+              '001100001100',
+              '000110011000'
+            ]
+          ],
+          octo: [
+            [
+              '001100001100',
+              '011110011110',
+              '111111111111',
+              '110111111011',
+              '111111111111',
+              '001101101100',
+              '011000000110',
+              '110000000011'
+            ],
+            [
+              '001100001100',
+              '011110011110',
+              '111111111111',
+              '110111111011',
+              '111111111111',
+              '001101101100',
+              '011011110110',
+              '110110011011'
+            ]
+          ]
+        },
+        playerExplosion: [
+          '1010101010101',
+          '0101010101010',
+          '1010101010101',
+          '0101010101010',
+          '1010101010101',
+          '0101010101010',
+          '1010101010101',
+          '0101010101010'
+        ]
+      };
+
+      const canvas = document.getElementById('game');
+      const ctx = canvas.getContext('2d');
+      const startForm = document.getElementById('startForm');
+      const playerNameInput = document.getElementById('playerName');
+      const nameStatus = document.getElementById('nameStatus');
+      const leaderboardList = document.getElementById('leaderboardList');
+      const startTouchBtn = document.getElementById('startTouchBtn');
+      const pauseTouchBtn = document.getElementById('pauseTouchBtn');
+      canvas.width = GAME_W * SCALE;
+      canvas.height = GAME_H * SCALE;
+      ctx.scale(SCALE, SCALE);
+      ctx.imageSmoothingEnabled = false;
+
+      const input = {
+        left: false,
+        right: false,
+        fire: false
+      };
+
+      let audioCtx = null;
+      const supportsPointerEvents = 'PointerEvent' in window;
+
+      const state = {
+        phase: 'title',
+        paused: false,
+        wave: 1,
+        score: 0,
+        hiScore: 0,
+        lives: 3,
+        playerShotsFired: 0,
+        player: {
+          x: (GAME_W - PLAYER_W) / 2,
+          y: 216,
+          speed: 95,
+          alive: true,
+          cooldown: 0
+        },
+        playerShot: null,
+        enemyShots: [],
+        invaders: [],
+        invaderDir: 1,
+        invaderFrame: 0,
+        invaderStepTimer: 0,
+        enemyFireTimer: 0,
+        enemyShotCycle: 0,
+        bunkers: [],
+        ufo: null,
+        ufoTimer: 16,
+        effects: [],
+        phaseTimer: 0,
+        gameOverBlink: 0,
+        lastLifeSound: false,
+        playerName: '',
+        leaderboard: [],
+        scoreSubmitted: false,
+        namePromptFlash: 0,
+        runPlayerName: ''
+      };
+
+      function safeLoadHiScore() {
+        try {
+          const raw = localStorage.getItem(HI_SCORE_KEY);
+          return raw ? Number(raw) || 0 : 0;
+        } catch {
+          return 0;
+        }
+      }
+
+      function safeSaveHiScore(value) {
+        try {
+          localStorage.setItem(HI_SCORE_KEY, String(value));
+        } catch {
+          // Ignore storage failures.
+        }
+      }
+
+      function safeLoadPlayerName() {
+        try {
+          const raw = localStorage.getItem(PLAYER_NAME_KEY);
+          return sanitizePlayerName(raw || '');
+        } catch {
+          return '';
+        }
+      }
+
+      function safeSavePlayerName(value) {
+        try {
+          localStorage.setItem(PLAYER_NAME_KEY, value);
+        } catch {
+          // Ignore storage failures.
+        }
+      }
+
+      function safeLoadLeaderboard() {
+        try {
+          const raw = localStorage.getItem(LEADERBOARD_KEY);
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) return [];
+          return sortLeaderboardEntries(
+            parsed
+            .map((entry) => {
+              const item = entry && typeof entry === 'object' ? entry : {};
+              return {
+                name: sanitizePlayerName(item.name || ''),
+                score: Math.max(0, Number(item.score) || 0),
+                wave: Math.max(1, Number(item.wave) || 1),
+                when: Number(item.when) || Date.now()
+              };
+            })
+            .filter((entry) => entry.name)
+          );
+        } catch {
+          return [];
+        }
+      }
+
+      function safeSaveLeaderboard(entries) {
+        try {
+          localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(sortLeaderboardEntries(entries)));
+        } catch {
+          // Ignore storage failures.
+        }
+      }
+
+      function sortLeaderboardEntries(entries) {
+        return [...entries]
+          .sort((a, b) => b.score - a.score || b.wave - a.wave || a.when - b.when)
+          .slice(0, MAX_LEADERBOARD_ENTRIES);
+      }
+
+      function getTopPilotRecord() {
+        const sorted = sortLeaderboardEntries(state.leaderboard);
+        const bestSaved = sorted[0] || null;
+
+        if (state.runPlayerName && state.score > 0) {
+          const savedBestScore = bestSaved ? bestSaved.score : 0;
+          if (state.score >= savedBestScore) {
+            return { name: state.runPlayerName, score: state.score };
+          }
+        }
+
+        if (bestSaved) {
+          return { name: bestSaved.name, score: bestSaved.score };
+        }
+
+        if (state.hiScore > 0) {
+          return { name: 'UNKNOWN', score: state.hiScore };
+        }
+
+        return { name: '---', score: 0 };
+      }
+
+      function sanitizePlayerName(rawName) {
+        return String(rawName || '')
+          .replace(/[^a-z0-9 _.-]/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 12)
+          .toUpperCase();
+      }
+
+      function updateNameStatus(message, isError = false) {
+        nameStatus.textContent = message;
+        nameStatus.classList.toggle('error', isError);
+      }
+
+      function renderLeaderboard() {
+        leaderboardList.textContent = '';
+        const sorted = sortLeaderboardEntries(state.leaderboard);
+
+        if (!sorted.length) {
+          const emptyRow = document.createElement('li');
+          emptyRow.innerHTML = '<span class=\"rank\">--</span><span class=\"name\">NO SCORES YET</span><span class=\"score\">0000</span>';
+          leaderboardList.appendChild(emptyRow);
+          return;
+        }
+
+        sorted.forEach((entry, index) => {
+          const row = document.createElement('li');
+          row.innerHTML =
+            '<span class=\"rank\">' + String(index + 1).padStart(2, '0') + '</span>' +
+            '<span class=\"name\">' + entry.name + '</span>' +
+            '<span class=\"score\">' + String(entry.score).padStart(4, '0') + '</span>';
+          leaderboardList.appendChild(row);
+        });
+      }
+
+      function setPlayerName(name) {
+        const normalized = sanitizePlayerName(name);
+        if (!normalized) return false;
+        state.playerName = normalized;
+        playerNameInput.value = normalized;
+        safeSavePlayerName(normalized);
+        updateNameStatus('Pilot ready: ' + normalized + '. Press Space or tap START.');
+        return true;
+      }
+
+      function commitPlayerNameFromInput() {
+        return setPlayerName(playerNameInput.value);
+      }
+
+      function submitLeaderboardScore() {
+        if (state.scoreSubmitted) return;
+        state.scoreSubmitted = true;
+
+        if (!state.runPlayerName || state.score <= 0) return;
+
+        state.leaderboard.push({
+          name: state.runPlayerName,
+          score: state.score,
+          wave: state.wave,
+          when: Date.now()
+        });
+        state.leaderboard = sortLeaderboardEntries(state.leaderboard);
+        safeSaveLeaderboard(state.leaderboard);
+        renderLeaderboard();
+      }
+
+      function ensureAudio() {
+        if (!audioCtx) {
+          const AudioCtor = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtor) {
+            audioCtx = new AudioCtor();
+          }
+        }
+      }
+
+      function beep(freq, duration, type = 'square', volume = 0.03) {
+        if (!audioCtx || state.paused) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(volume, now + 0.005);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + duration + 0.01);
+      }
+
+      function drawSprite(sprite, x, y, color) {
+        ctx.fillStyle = color;
+        for (let row = 0; row < sprite.length; row += 1) {
+          const line = sprite[row];
+          for (let col = 0; col < line.length; col += 1) {
+            if (line[col] === '1') {
+              ctx.fillRect(x + col, y + row, 1, 1);
+            }
+          }
+        }
+      }
+
+      function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
+        return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+      }
+
+      function addScore(points) {
+        state.score += points;
+        if (state.score > state.hiScore) {
+          state.hiScore = state.score;
+          safeSaveHiScore(state.hiScore);
+        }
+
+        const bonusLifeThreshold = 1500;
+        if (!state.lastLifeSound && state.score >= bonusLifeThreshold) {
+          state.lives += 1;
+          state.lastLifeSound = true;
+          beep(680, 0.08, 'square', 0.04);
+        }
+      }
+
+      function resetBunkers() {
+        const bunkerY = 182;
+        const positions = [28, 76, 124, 172];
+        state.bunkers = positions.map((x) => ({
+          x,
+          y: bunkerY,
+          cells: BUNKER_TEMPLATE.map((row) => row.split('').map((c) => c === '1'))
+        }));
+      }
+
+      function createInvaders() {
+        state.invaders = [];
+        const startX = 26;
+        const startY = 44;
+        const spacingX = 16;
+        const spacingY = 14;
+
+        for (let row = 0; row < 5; row += 1) {
+          for (let col = 0; col < 11; col += 1) {
+            let spriteType;
+            if (row === 0) spriteType = 'squid';
+            else if (row <= 2) spriteType = 'crab';
+            else spriteType = 'octo';
+
+            state.invaders.push({
+              row,
+              col,
+              spriteType,
+              x: startX + col * spacingX,
+              y: startY + row * spacingY,
+              alive: true
+            });
+          }
+        }
+      }
+
+      function startWave(resetPlayerPosition = true) {
+        createInvaders();
+        resetBunkers();
+        state.invaderDir = 1;
+        state.invaderFrame = 0;
+        state.invaderStepTimer = 0.5;
+        state.enemyFireTimer = 0.9;
+        state.enemyShotCycle = 0;
+        state.playerShot = null;
+        state.enemyShots = [];
+        state.effects = [];
+        state.ufo = null;
+        state.ufoTimer = 10 + Math.random() * 6;
+        if (resetPlayerPosition) {
+          state.player.x = (GAME_W - PLAYER_W) / 2;
+        }
+        state.player.y = 216;
+        state.player.alive = true;
+        state.player.cooldown = 0;
+      }
+
+      function startGame() {
+        state.phase = 'playing';
+        state.paused = false;
+        state.wave = 1;
+        state.score = 0;
+        state.lives = 3;
+        state.playerShotsFired = 0;
+        state.lastLifeSound = false;
+        state.scoreSubmitted = false;
+        state.gameOverBlink = 0;
+        state.namePromptFlash = 0;
+        state.runPlayerName = state.playerName;
+        updateNameStatus('Pilot active: ' + state.runPlayerName + '.');
+        startWave(true);
+      }
+
+      function enterGameOver() {
+        if (state.phase === 'game_over') return;
+        state.phase = 'game_over';
+        state.phaseTimer = 0;
+        submitLeaderboardScore();
+        const label = state.runPlayerName || state.playerName || 'PILOT';
+        updateNameStatus('Game over, ' + label + '. Press Space or tap START to restart.');
+      }
+
+      function aliveInvaders() {
+        return state.invaders.filter((inv) => inv.alive);
+      }
+
+      function invaderStepInterval() {
+        const alive = aliveInvaders().length;
+        const t = 1 - alive / 55;
+        const max = Math.max(0.22, 0.55 - (state.wave - 1) * 0.03);
+        const min = Math.max(0.05, 0.085 - (state.wave - 1) * 0.003);
+        return max - (max - min) * Math.pow(t, 0.7);
+      }
+
+      function maxEnemyShots() {
+        const alive = aliveInvaders().length;
+        if (alive > 40) return 1;
+        if (alive > 10) return 2;
+        return 3;
+      }
+
+      function enemyFireInterval() {
+        const alive = aliveInvaders().length;
+        const t = 1 - alive / 55;
+        const base = 1.25 - 0.95 * t;
+        const waveScale = Math.max(0.5, 1 - (state.wave - 1) * 0.07);
+        return Math.max(0.15, base * waveScale * (0.75 + Math.random() * 0.65));
+      }
+
+      function spawnEnemyShot() {
+        if (state.enemyShots.length >= maxEnemyShots()) return;
+        const living = aliveInvaders();
+        if (!living.length) return;
+
+        const columns = new Map();
+        for (const invader of living) {
+          const current = columns.get(invader.col);
+          if (!current || invader.y > current.y) {
+            columns.set(invader.col, invader);
+          }
+        }
+
+        const options = [...columns.values()];
+        if (!options.length) return;
+        const shooter = options[Math.floor(Math.random() * options.length)];
+
+        const types = ['rolling', 'plunger', 'squiggly'];
+        const type = types[state.enemyShotCycle % types.length];
+        state.enemyShotCycle += 1;
+
+        let speed = 82;
+        if (type === 'plunger') speed = 104;
+        if (type === 'rolling') speed = 92;
+
+        state.enemyShots.push({
+          x: shooter.x + Math.floor(INVADER_W / 2),
+          y: shooter.y + INVADER_H,
+          baseX: shooter.x + Math.floor(INVADER_W / 2),
+          age: 0,
+          type,
+          speed
+        });
+      }
+
+      function carveBunker(bunker, localX, localY, radius, fromEnemy) {
+        for (let dy = -radius; dy <= radius; dy += 1) {
+          for (let dx = -radius; dx <= radius; dx += 1) {
+            if (dx * dx + dy * dy > radius * radius + 0.4) continue;
+            const x = localX + dx;
+            let y = localY + dy;
+
+            if (fromEnemy && dx !== 0) y += 1;
+            if (!fromEnemy && dx !== 0) y -= 1;
+
+            if (y >= 0 && y < bunker.cells.length && x >= 0 && x < bunker.cells[0].length) {
+              bunker.cells[y][x] = false;
+            }
+          }
+        }
+      }
+
+      function hitBunker(worldX, worldY, fromEnemy) {
+        for (const bunker of state.bunkers) {
+          const localX = Math.floor(worldX - bunker.x);
+          const localY = Math.floor(worldY - bunker.y);
+          if (
+            localY >= 0 &&
+            localY < bunker.cells.length &&
+            localX >= 0 &&
+            localX < bunker.cells[0].length &&
+            bunker.cells[localY][localX]
+          ) {
+            carveBunker(bunker, localX, localY, 2, fromEnemy);
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function carveBunkerRect(worldX, worldY, width, height) {
+        for (const bunker of state.bunkers) {
+          const x0 = Math.max(0, Math.floor(worldX - bunker.x));
+          const y0 = Math.max(0, Math.floor(worldY - bunker.y));
+          const x1 = Math.min(bunker.cells[0].length, Math.ceil(worldX + width - bunker.x));
+          const y1 = Math.min(bunker.cells.length, Math.ceil(worldY + height - bunker.y));
+
+          if (x0 >= x1 || y0 >= y1) continue;
+
+          for (let y = y0; y < y1; y += 1) {
+            for (let x = x0; x < x1; x += 1) {
+              bunker.cells[y][x] = false;
+            }
+          }
+        }
+      }
+
+      function triggerPlayerHit() {
+        if (!state.player.alive || state.phase !== 'playing') return;
+
+        state.player.alive = false;
+        state.phase = 'respawn';
+        state.phaseTimer = 1.0;
+        state.playerShot = null;
+        state.enemyShots.length = 0;
+        state.effects.push({ x: state.player.x, y: state.player.y, ttl: 0.35, type: 'playerExplosion' });
+        beep(120, 0.15, 'sawtooth', 0.045);
+        state.lives -= 1;
+
+        if (state.lives <= 0) {
+          enterGameOver();
+        }
+      }
+
+      function triggerWaveClear() {
+        state.phase = 'wave_transition';
+        state.phaseTimer = 1.3;
+        state.playerShot = null;
+        state.enemyShots.length = 0;
+        state.ufo = null;
+        beep(900, 0.04, 'square', 0.03);
+        beep(1150, 0.04, 'square', 0.03);
+      }
+
+      function updateInvaders(dt) {
+        state.invaderStepTimer -= dt;
+        if (state.invaderStepTimer > 0) return;
+
+        const living = aliveInvaders();
+        if (!living.length) {
+          triggerWaveClear();
+          return;
+        }
+
+        const shift = 2;
+        let hitsEdge = false;
+        for (const invader of living) {
+          const nextX = invader.x + state.invaderDir * shift;
+          if (nextX < 8 || nextX + INVADER_W > GAME_W - 8) {
+            hitsEdge = true;
+            break;
+          }
+        }
+
+        if (hitsEdge) {
+          state.invaderDir *= -1;
+          for (const invader of living) {
+            invader.y += 8;
+          }
+        } else {
+          for (const invader of living) {
+            invader.x += state.invaderDir * shift;
+          }
+        }
+
+        state.invaderFrame = 1 - state.invaderFrame;
+        state.invaderStepTimer = invaderStepInterval();
+
+        const toneBase = 260 + (55 - living.length) * 3;
+        beep(toneBase, 0.03, 'square', 0.015);
+
+        const bottom = living.reduce((max, inv) => Math.max(max, inv.y + INVADER_H), 0);
+        if (bottom >= state.player.y + 2) {
+          enterGameOver();
+        }
+
+        for (const invader of living) {
+          carveBunkerRect(invader.x, invader.y + INVADER_H - 1, INVADER_W, 2);
+        }
+      }
+
+      function updatePlayer(dt) {
+        if (!state.player.alive) return;
+
+        const dir = (input.right ? 1 : 0) - (input.left ? 1 : 0);
+        state.player.x += dir * state.player.speed * dt;
+        state.player.x = Math.max(6, Math.min(GAME_W - PLAYER_W - 6, state.player.x));
+
+        state.player.cooldown -= dt;
+        if (input.fire && !state.playerShot && state.player.cooldown <= 0) {
+          state.playerShot = {
+            x: Math.round(state.player.x + PLAYER_W / 2),
+            y: state.player.y - 2,
+            speed: 180
+          };
+          state.player.cooldown = 0.25;
+          state.playerShotsFired += 1;
+          beep(680, 0.03, 'square', 0.03);
+        }
+      }
+
+      function updatePlayerShot(dt) {
+        if (!state.playerShot) return;
+
+        state.playerShot.y -= state.playerShot.speed * dt;
+
+        if (state.playerShot.y < 30) {
+          if (state.ufo && rectsOverlap(state.playerShot.x - 1, state.playerShot.y - 3, 2, 4, state.ufo.x, state.ufo.y, UFO_W, UFO_H)) {
+            const ufoPoints = UFO_SCORE_TABLE[state.playerShotsFired % UFO_SCORE_TABLE.length];
+            addScore(ufoPoints);
+            state.effects.push({
+              x: state.ufo.x,
+              y: state.ufo.y - 2,
+              ttl: 0.8,
+              type: 'text',
+              text: String(ufoPoints),
+              color: COLORS.hud
+            });
+            beep(1100, 0.08, 'square', 0.04);
+            state.ufo = null;
+            state.playerShot = null;
+            return;
+          }
+        }
+
+        for (const invader of state.invaders) {
+          if (!invader.alive) continue;
+          if (rectsOverlap(state.playerShot.x - 1, state.playerShot.y - 3, 2, 4, invader.x, invader.y, INVADER_W, INVADER_H)) {
+            invader.alive = false;
+            addScore(INVADER_SCORE_BY_ROW[invader.row]);
+            state.effects.push({ x: invader.x, y: invader.y, ttl: 0.18, type: 'flash' });
+            beep(780, 0.04, 'square', 0.028);
+            state.playerShot = null;
+            if (!aliveInvaders().length) {
+              triggerWaveClear();
+            }
+            return;
+          }
+        }
+
+        if (hitBunker(state.playerShot.x, state.playerShot.y, false)) {
+          state.playerShot = null;
+          beep(190, 0.03, 'triangle', 0.015);
+          return;
+        }
+
+        for (let i = state.enemyShots.length - 1; i >= 0; i -= 1) {
+          const shot = state.enemyShots[i];
+          if (Math.abs(state.playerShot.x - shot.x) <= 2 && Math.abs(state.playerShot.y - shot.y) <= 4) {
+            state.enemyShots.splice(i, 1);
+            state.playerShot = null;
+            beep(480, 0.02, 'triangle', 0.02);
+            return;
+          }
+        }
+
+        if (state.playerShot && state.playerShot.y < 28) {
+          state.playerShot = null;
+        }
+      }
+
+      function updateEnemyShots(dt) {
+        for (let i = state.enemyShots.length - 1; i >= 0; i -= 1) {
+          const shot = state.enemyShots[i];
+          shot.age += dt;
+
+          if (shot.type === 'squiggly') {
+            shot.x = shot.baseX + Math.sin(shot.age * 20) * 3;
+          } else if (shot.type === 'rolling') {
+            shot.x = shot.baseX + Math.sin(shot.age * 28) * 1.4;
+          }
+
+          shot.y += shot.speed * dt;
+
+          if (hitBunker(shot.x, shot.y, true)) {
+            state.enemyShots.splice(i, 1);
+            beep(150, 0.02, 'sawtooth', 0.012);
+            continue;
+          }
+
+          if (
+            state.player.alive &&
+            rectsOverlap(shot.x - 1, shot.y - 3, 2, 4, state.player.x, state.player.y, PLAYER_W, PLAYER_H)
+          ) {
+            state.enemyShots.splice(i, 1);
+            triggerPlayerHit();
+            return;
+          }
+
+          if (shot.y >= 232) {
+            state.enemyShots.splice(i, 1);
+          }
+        }
+      }
+
+      function updateUfo(dt) {
+        state.ufoTimer -= dt;
+
+        if (!state.ufo && state.ufoTimer <= 0) {
+          const dir = Math.random() < 0.5 ? 1 : -1;
+          state.ufo = {
+            x: dir === 1 ? -UFO_W - 2 : GAME_W + 2,
+            y: 20,
+            dir,
+            speed: 28 + state.wave * 2.5
+          };
+          state.ufoTimer = 18 + Math.random() * 14;
+          beep(420, 0.06, 'sawtooth', 0.015);
+        }
+
+        if (!state.ufo) return;
+
+        state.ufo.x += state.ufo.dir * state.ufo.speed * dt;
+        if (state.ufo.dir === 1 && state.ufo.x > GAME_W + UFO_W + 4) state.ufo = null;
+        if (state.ufo && state.ufo.dir === -1 && state.ufo.x < -UFO_W - 4) state.ufo = null;
+      }
+
+      function updateEffects(dt) {
+        for (let i = state.effects.length - 1; i >= 0; i -= 1) {
+          state.effects[i].ttl -= dt;
+          if (state.effects[i].ttl <= 0) {
+            state.effects.splice(i, 1);
+          }
+        }
+      }
+
+      function updatePlaying(dt) {
+        updatePlayer(dt);
+        updateInvaders(dt);
+
+        state.enemyFireTimer -= dt;
+        if (state.enemyFireTimer <= 0) {
+          spawnEnemyShot();
+          state.enemyFireTimer = enemyFireInterval();
+        }
+
+        updatePlayerShot(dt);
+        updateEnemyShots(dt);
+        updateUfo(dt);
+      }
+
+      function updateRespawn(dt) {
+        state.phaseTimer -= dt;
+        if (state.phaseTimer <= 0) {
+          if (state.lives > 0) {
+            state.player.alive = true;
+            state.player.x = (GAME_W - PLAYER_W) / 2;
+            state.phase = 'playing';
+          } else {
+            enterGameOver();
+          }
+        }
+      }
+
+      function updateWaveTransition(dt) {
+        state.phaseTimer -= dt;
+        if (state.phaseTimer <= 0) {
+          state.wave += 1;
+          startWave(true);
+          state.phase = 'playing';
+        }
+      }
+
+      function drawBunkers() {
+        ctx.fillStyle = COLORS.bunker;
+        for (const bunker of state.bunkers) {
+          for (let y = 0; y < bunker.cells.length; y += 1) {
+            for (let x = 0; x < bunker.cells[0].length; x += 1) {
+              if (bunker.cells[y][x]) {
+                ctx.fillRect(bunker.x + x, bunker.y + y, 1, 1);
+              }
+            }
+          }
+        }
+      }
+
+      function drawHud() {
+        const reserveLives = Math.max(0, Math.min(state.lives - 1, 5));
+        const topPilot = getTopPilotRecord();
+        const pilotLabel = topPilot.name.length > 12 ? topPilot.name.slice(0, 12) : topPilot.name;
+
+        ctx.fillStyle = COLORS.hud;
+        ctx.font = '8px monospace';
+        ctx.textBaseline = 'top';
+
+        ctx.fillText('CURRENT SCORE', 6, 4);
+        ctx.fillText(String(state.score).padStart(4, '0'), 20, 13);
+
+        ctx.fillText('HI-SCORE', 134, 4);
+        ctx.fillText(String(state.hiScore).padStart(4, '0'), 146, 13);
+
+        ctx.fillText('TOP PILOT ' + pilotLabel, 6, 21);
+
+        ctx.strokeStyle = '#2f2f2f';
+        ctx.beginPath();
+        ctx.moveTo(0, 28);
+        ctx.lineTo(GAME_W, 28);
+        ctx.stroke();
+
+        ctx.strokeStyle = COLORS.playfield;
+        ctx.beginPath();
+        ctx.moveTo(0, 232);
+        ctx.lineTo(GAME_W, 232);
+        ctx.stroke();
+
+        ctx.fillStyle = COLORS.hud;
+        ctx.fillText('CREDIT 00', 4, 244);
+        ctx.fillText('WAVE ' + String(state.wave).padStart(2, '0'), 168, 244);
+
+        ctx.fillStyle = COLORS.playfield;
+        ctx.fillText(String(reserveLives), 6, 235);
+        for (let i = 0; i < reserveLives; i += 1) {
+          drawSprite(SPRITES.player, 18 + i * 16, 238, COLORS.playfield);
+        }
+      }
+
+      function drawInvaders() {
+        for (const invader of state.invaders) {
+          if (!invader.alive) continue;
+          const frames = SPRITES.invaders[invader.spriteType];
+          drawSprite(frames[state.invaderFrame], invader.x, invader.y, COLORS.playfield);
+        }
+      }
+
+      function drawShots() {
+        if (state.playerShot) {
+          ctx.fillStyle = COLORS.bullet;
+          ctx.fillRect(Math.floor(state.playerShot.x), Math.floor(state.playerShot.y - 4), 1, 5);
+          ctx.fillRect(Math.floor(state.playerShot.x - 1), Math.floor(state.playerShot.y - 2), 3, 1);
+        }
+
+        for (const shot of state.enemyShots) {
+          ctx.fillStyle = COLORS.bullet;
+          if (shot.type === 'squiggly') {
+            ctx.fillRect(Math.floor(shot.x - 1), Math.floor(shot.y - 3), 1, 1);
+            ctx.fillRect(Math.floor(shot.x), Math.floor(shot.y - 2), 1, 1);
+            ctx.fillRect(Math.floor(shot.x - 1), Math.floor(shot.y - 1), 1, 1);
+            ctx.fillRect(Math.floor(shot.x), Math.floor(shot.y), 1, 1);
+          } else if (shot.type === 'rolling') {
+            ctx.fillRect(Math.floor(shot.x), Math.floor(shot.y - 3), 1, 1);
+            ctx.fillRect(Math.floor(shot.x - 1), Math.floor(shot.y - 2), 3, 1);
+            ctx.fillRect(Math.floor(shot.x), Math.floor(shot.y - 1), 1, 1);
+            ctx.fillRect(Math.floor(shot.x - 1), Math.floor(shot.y), 3, 1);
+          } else {
+            ctx.fillRect(Math.floor(shot.x - 1), Math.floor(shot.y - 3), 3, 1);
+            ctx.fillRect(Math.floor(shot.x), Math.floor(shot.y - 2), 1, 3);
+          }
+        }
+      }
+
+      function drawEffects() {
+        for (const effect of state.effects) {
+          if (effect.type === 'flash') {
+            ctx.fillStyle = COLORS.hud;
+            ctx.fillRect(effect.x - 1, effect.y + 2, 14, 3);
+          } else if (effect.type === 'playerExplosion') {
+            drawSprite(SPRITES.playerExplosion, Math.floor(effect.x), Math.floor(effect.y), COLORS.warning);
+          } else if (effect.type === 'text') {
+            ctx.fillStyle = effect.color || COLORS.hud;
+            ctx.font = '8px monospace';
+            ctx.fillText(effect.text, Math.floor(effect.x), Math.floor(effect.y));
+          }
+        }
+      }
+
+      function drawPlayer() {
+        if (state.player.alive) {
+          drawSprite(SPRITES.player, Math.floor(state.player.x), Math.floor(state.player.y), COLORS.playfield);
+        }
+      }
+
+      function drawUfo() {
+        if (!state.ufo) return;
+        drawSprite(SPRITES.ufo, Math.floor(state.ufo.x), Math.floor(state.ufo.y), COLORS.ufo);
+      }
+
+      function drawOverlays() {
+        ctx.fillStyle = COLORS.hud;
+        ctx.font = '8px monospace';
+        ctx.textAlign = 'left';
+
+        if (state.phase === 'title') {
+          ctx.fillText('SPACE INVADERS', 70, 86);
+          ctx.fillText('* SCORE ADVANCE TABLE *', 48, 102);
+          ctx.fillText('= ? MYSTERY', 70, 114);
+          ctx.fillText('= 30 POINTS', 70, 125);
+          ctx.fillText('= 20 POINTS', 70, 136);
+          ctx.fillText('= 10 POINTS', 70, 147);
+
+          drawSprite(SPRITES.ufo, 54, 108, COLORS.ufo);
+          drawSprite(SPRITES.invaders.squid[0], 54, 121, COLORS.playfield);
+          drawSprite(SPRITES.invaders.crab[0], 54, 132, COLORS.playfield);
+          drawSprite(SPRITES.invaders.octo[0], 54, 143, COLORS.playfield);
+
+          if (state.playerName) {
+            ctx.fillText('PILOT ' + state.playerName, 72, 162);
+            if (Math.floor(performance.now() / 450) % 2 === 0) {
+              ctx.fillText('SPACE OR START TO PLAY', 52, 172);
+            }
+          } else if (Math.floor(performance.now() / 450) % 2 === 0) {
+            ctx.fillStyle = state.namePromptFlash > 0 ? COLORS.warning : COLORS.hud;
+            ctx.fillText('ENTER NAME TO START', 62, 172);
+          }
+        }
+
+        if (state.phase === 'wave_transition') {
+          ctx.fillStyle = COLORS.hud;
+          ctx.fillText('WAVE CLEARED', 82, 124);
+        }
+
+        if (state.phase === 'respawn') {
+          if (Math.floor(performance.now() / 120) % 2 === 0) {
+            ctx.fillStyle = COLORS.warning;
+            ctx.fillText('PLAYER HIT', 88, 124);
+          }
+        }
+
+        if (state.phase === 'game_over') {
+          state.gameOverBlink += 1;
+          if (Math.floor(state.gameOverBlink / 20) % 2 === 0) {
+            ctx.fillStyle = COLORS.hud;
+            ctx.fillText('GAME OVER', 90, 124);
+            ctx.fillText('SPACE OR START TO REPLAY', 49, 140);
+          }
+        }
+
+        if (state.paused && state.phase !== 'title') {
+          ctx.fillStyle = COLORS.hud;
+          ctx.fillText('PAUSED', 98, 118);
+        }
+      }
+
+      function render() {
+        ctx.fillStyle = COLORS.bg;
+        ctx.fillRect(0, 0, GAME_W, GAME_H);
+
+        drawHud();
+        drawBunkers();
+        drawInvaders();
+        drawUfo();
+        drawPlayer();
+        drawShots();
+        drawEffects();
+        drawOverlays();
+      }
+
+      function update(dt) {
+        if (state.namePromptFlash > 0) {
+          state.namePromptFlash = Math.max(0, state.namePromptFlash - dt);
+        }
+
+        if (state.paused) {
+          updateEffects(dt);
+          return;
+        }
+
+        if (state.phase === 'playing') {
+          updatePlaying(dt);
+        } else if (state.phase === 'respawn') {
+          updateRespawn(dt);
+        } else if (state.phase === 'wave_transition') {
+          updateWaveTransition(dt);
+        }
+
+        updateEffects(dt);
+      }
+
+      function isTypingTarget(target) {
+        if (!target) return false;
+        if (target.isContentEditable) return true;
+        const tag = String(target.tagName || '').toLowerCase();
+        return tag === 'input' || tag === 'textarea';
+      }
+
+      function requirePlayerName() {
+        if (state.playerName) {
+          return true;
+        }
+
+        state.namePromptFlash = 1.2;
+        updateNameStatus('Name required before starting.', true);
+        playerNameInput.focus();
+        return false;
+      }
+
+      function hasUnsavedNameChange() {
+        const pending = sanitizePlayerName(playerNameInput.value);
+        if (!pending) return false;
+        return pending !== state.playerName;
+      }
+
+      function applyNameChange() {
+        if (!commitPlayerNameFromInput()) {
+          updateNameStatus('Enter a valid name first.', true);
+          return false;
+        }
+
+        state.namePromptFlash = 0;
+        return true;
+      }
+
+      function handleActionStart() {
+        ensureAudio();
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+
+        if (state.phase === 'title' || state.phase === 'game_over') {
+          if (hasUnsavedNameChange()) {
+            state.namePromptFlash = 1.2;
+            updateNameStatus('Set the new name first (Enter or SET NAME), then press Space or START.', true);
+            playerNameInput.focus();
+            return;
+          }
+
+          if (!requirePlayerName()) return;
+          startGame();
+        }
+      }
+
+      function onKeyDown(event) {
+        const key = event.key.toLowerCase();
+
+        if (isTypingTarget(event.target)) {
+          if (key === 'enter') {
+            applyNameChange();
+            event.preventDefault();
+          }
+          return;
+        }
+
+        if (key === 'arrowleft' || key === 'a') {
+          input.left = true;
+          event.preventDefault();
+        }
+
+        if (key === 'arrowright' || key === 'd') {
+          input.right = true;
+          event.preventDefault();
+        }
+
+        if (key === ' ' || key === 'spacebar') {
+          input.fire = true;
+          handleActionStart();
+          event.preventDefault();
+        }
+
+        if (key === 'enter') {
+          handleActionStart();
+          event.preventDefault();
+        }
+
+        if (key === 'p') {
+          togglePause();
+        }
+      }
+
+      function onKeyUp(event) {
+        if (isTypingTarget(event.target)) return;
+
+        const key = event.key.toLowerCase();
+        if (key === 'arrowleft' || key === 'a') input.left = false;
+        if (key === 'arrowright' || key === 'd') input.right = false;
+        if (key === ' ' || key === 'spacebar') input.fire = false;
+      }
+
+      function bindTouchButton(element, flagName) {
+        const press = (e) => {
+          e.preventDefault();
+          ensureAudio();
+          if (flagName === 'fire') handleActionStart();
+          input[flagName] = true;
+        };
+        const release = (e) => {
+          e.preventDefault();
+          input[flagName] = false;
+        };
+
+        if (supportsPointerEvents) {
+          element.addEventListener('pointerdown', press);
+          element.addEventListener('pointerup', release);
+          element.addEventListener('pointercancel', release);
+          element.addEventListener('pointerleave', release);
+          return;
+        }
+
+        element.addEventListener('touchstart', press, false);
+        element.addEventListener('touchend', release, false);
+        element.addEventListener('touchcancel', release, false);
+        element.addEventListener('mousedown', press);
+        element.addEventListener('mouseup', release);
+        element.addEventListener('mouseleave', release);
+      }
+
+      function togglePause() {
+        if (state.phase === 'title' || state.phase === 'game_over') return;
+        state.paused = !state.paused;
+      }
+
+      function setupInput() {
+        window.addEventListener('keydown', onKeyDown, { passive: false });
+        window.addEventListener('keyup', onKeyUp, { passive: true });
+
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const fireBtn = document.getElementById('fireBtn');
+
+        if (leftBtn) bindTouchButton(leftBtn, 'left');
+        if (rightBtn) bindTouchButton(rightBtn, 'right');
+        if (fireBtn) bindTouchButton(fireBtn, 'fire');
+
+        const startAction = (event) => {
+          event.preventDefault();
+          handleActionStart();
+        };
+
+        const pauseAction = (event) => {
+          event.preventDefault();
+          ensureAudio();
+          togglePause();
+        };
+
+        if (startTouchBtn) {
+          if (supportsPointerEvents) {
+            startTouchBtn.addEventListener('pointerdown', startAction);
+          } else {
+            startTouchBtn.addEventListener('touchstart', startAction, false);
+            startTouchBtn.addEventListener('click', startAction);
+          }
+        }
+
+        if (pauseTouchBtn) {
+          if (supportsPointerEvents) {
+            pauseTouchBtn.addEventListener('pointerdown', pauseAction);
+          } else {
+            pauseTouchBtn.addEventListener('touchstart', pauseAction, false);
+            pauseTouchBtn.addEventListener('click', pauseAction);
+          }
+        }
+
+        startForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+          applyNameChange();
+        });
+
+        playerNameInput.addEventListener('input', () => {
+          const preview = sanitizePlayerName(playerNameInput.value);
+          if (preview) {
+            if (preview === state.playerName) {
+              updateNameStatus('Pilot ready: ' + preview + '. Press Space or tap START.');
+            } else {
+              updateNameStatus('Press Enter or tap SET NAME to set pilot to ' + preview + '.', false);
+            }
+          } else {
+            updateNameStatus('Enter your name to start.');
+          }
+        });
+      }
+
+      function init() {
+        state.hiScore = safeLoadHiScore();
+        state.leaderboard = safeLoadLeaderboard();
+        renderLeaderboard();
+        const savedName = safeLoadPlayerName();
+        if (savedName) {
+          setPlayerName(savedName);
+        } else {
+          updateNameStatus('Enter your name to start.');
+        }
+        resetBunkers();
+        createInvaders();
+        setupInput();
+
+        let last = performance.now();
+        function frame(now) {
+          const dt = Math.min(0.05, (now - last) / 1000);
+          last = now;
+          update(dt);
+          render();
+          requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

@@ -275,6 +275,109 @@ h2 {
   color: var(--text-soft);
 }
 
+.games-hub-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.game-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.game-card-icon {
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 0.3rem;
+}
+
+.game-card-copy {
+  color: var(--text-soft);
+  margin-top: 0.55rem;
+}
+
+.game-card-actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.photo-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.photo-card {
+  padding: 0.9rem;
+  overflow: hidden;
+}
+
+.photo-image-wrap {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: calc(var(--radius-md) - 2px);
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-card-portrait .photo-image-wrap {
+  aspect-ratio: 3 / 4;
+}
+
+.photo-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-placeholder {
+  font-weight: 700;
+  color: rgba(15, 23, 42, 0.85);
+  letter-spacing: 0.02em;
+}
+
+.photo-tone-1 {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.photo-tone-2 {
+  background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%);
+}
+
+.photo-tone-3 {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+}
+
+.photo-tone-4 {
+  background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%);
+}
+
+.photo-tone-5 {
+  background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+}
+
+.photo-meta {
+  padding: 0.9rem 0.45rem 0.2rem;
+}
+
+.photo-meta h3 {
+  font-size: 1.08rem;
+  margin-bottom: 0.35rem;
+}
+
+.photo-meta p {
+  color: var(--text-soft);
+}
+
 .site-footer {
   padding-top: 2rem;
   padding-bottom: 2.4rem;
@@ -306,8 +409,14 @@ h2 {
 
 @media (max-width: 960px) {
   .stats,
-  .grid {
+  .grid,
+  .games-hub-grid,
+  .photo-grid {
     grid-template-columns: 1fr;
+  }
+
+  .photo-card-portrait .photo-image-wrap {
+    aspect-ratio: 4 / 5;
   }
 
   .nav-links {

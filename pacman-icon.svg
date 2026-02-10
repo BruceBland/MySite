@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Pac-Man icon">
+  <defs>
+    <linearGradient id="pacGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd454" />
+      <stop offset="100%" stop-color="#ff8a3d" />
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#06090f" />
+  <rect x="2.5" y="2.5" width="59" height="59" rx="13.5" fill="none" stroke="url(#pacGlow)" />
+  <circle cx="16" cy="18" r="1.2" fill="#ffe8a3" />
+  <circle cx="48" cy="14" r="1.2" fill="#ffe8a3" />
+  <circle cx="50" cy="24" r="1.1" fill="#ffe8a3" />
+  <path d="M32 14A18 18 0 1 1 18.4 43.8L32 32Z" fill="#ffd454" />
+  <circle cx="30" cy="24" r="1.9" fill="#101010" />
+  <circle cx="44.5" cy="31.5" r="2.3" fill="#ffefad" />
+  <circle cx="50" cy="31.5" r="2" fill="#ffefad" />
+  <circle cx="55" cy="31.5" r="1.7" fill="#ffefad" />
+</svg>

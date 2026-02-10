@@ -137,6 +137,35 @@
       line-height: 1.35;
     }
 
+    #home-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 36px;
+      padding: 0 10px;
+      border: 1px solid rgba(242, 242, 242, 0.65);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--line);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: background-color 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+    }
+
+    #home-link:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.85);
+    }
+
+    #home-link:focus-visible {
+      outline: none;
+      border-color: #fff;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28);
+    }
+
     #leaderboard-list {
       list-style: none;
       display: flex;
@@ -226,6 +255,7 @@
       <label for="player-name">PLAYER NAME</label>
       <input id="player-name" maxlength="12" autocomplete="nickname" spellcheck="false">
       <p id="leaderboard-note">Score is posted automatically when a run ends.</p>
+      <a id="home-link" href="index.html">Back to Home</a>
       <ol id="leaderboard-list"></ol>
       <p id="leaderboard-status" aria-live="polite"></p>
     </aside>
@@ -546,7 +576,7 @@
         ship.alive = false;
         lives -= 1;
 
-        if (lives < 0) {
+        if (lives <= 0) {
           gameState = "gameover";
           messageTimer = 0;
           if (score > highScore) {

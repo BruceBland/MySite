@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Arcade games page with Asteroids, Space Invaders, and Pac-Man."
+    />
+    <title>Bruce Bland | Games</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
+    <header class="site-header">
+      <nav class="nav container">
+        <a class="brand" href="index.html#top">Bruce Bland</a>
+        <div class="nav-links">
+          <a href="index.html#about">About</a>
+          <a href="index.html#highlights">Highlights</a>
+          <a href="recent_protographs.html">Recent Photography</a>
+          <a href="games.html">Games</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero container reveal">
+        <p class="eyebrow">BB Games</p>
+        <h1>Choose an arcade game.</h1>
+        <p class="hero-copy">
+          Launch from this page: Asteroids, Space Invaders, or Pac-Man.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="index.html#top">Back to Home</a>
+        </div>
+      </section>
+
+      <section class="section container reveal">
+        <div class="section-head">
+          <p class="eyebrow">Arcade</p>
+          <h2>Game Selection</h2>
+        </div>
+        <div class="games-hub-grid">
+          <article class="card">
+            <div class="game-card-title">
+              <img src="asteroids-icon.svg" alt="" aria-hidden="true" class="game-card-icon" />
+              <h3>Asteroids</h3>
+            </div>
+            <p class="game-card-copy">
+              Classic vector-style asteroid combat with local leaderboard tracking.
+            </p>
+            <div class="game-card-actions">
+              <a class="btn btn-secondary btn-icon" href="Games1.html">
+                <img src="asteroids-icon.svg" alt="" aria-hidden="true" class="btn-icon-image" />
+                Play Asteroids
+              </a>
+            </div>
+          </article>
+          <article class="card">
+            <div class="game-card-title">
+              <img src="space-invaders-icon.svg" alt="" aria-hidden="true" class="game-card-icon" />
+              <h3>Space Invaders</h3>
+            </div>
+            <p class="game-card-copy">
+              Arcade-style formation battles with score progression and top pilot ranking.
+            </p>
+            <div class="game-card-actions">
+              <a class="btn btn-secondary btn-icon" href="Games2.html">
+                <img src="space-invaders-icon.svg" alt="" aria-hidden="true" class="btn-icon-image" />
+                Play Space Invaders
+              </a>
+            </div>
+          </article>
+          <article class="card">
+            <div class="game-card-title">
+              <img src="pacman-icon.svg" alt="" aria-hidden="true" class="game-card-icon" />
+              <h3>Pac-Man</h3>
+            </div>
+            <p class="game-card-copy">
+              Retro maze action with pellets, ghosts, and classic arcade pacing.
+            </p>
+            <div class="game-card-actions">
+              <a class="btn btn-secondary btn-icon" href="PacMan.html">
+                <img src="pacman-icon.svg" alt="" aria-hidden="true" class="btn-icon-image" />
+                Play Pac-Man
+              </a>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
