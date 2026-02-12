@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="t d">
+  <title id="t">Technology and Equity Future</title>
+  <desc id="d">Illustration of future-facing market infrastructure and AI-connected systems.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#dde9f2"/>
+      <stop offset="52%" stop-color="#afc8d8"/>
+      <stop offset="100%" stop-color="#8ea7b7"/>
+    </linearGradient>
+    <pattern id="dot" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.2" fill="rgba(255,255,255,0.28)"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(15,35,45,0.24)"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <polygon points="0,0 9,4.5 0,9" fill="#1d3b4d"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <rect width="1200" height="760" fill="url(#dot)"/>
+  <rect x="40" y="40" width="1120" height="680" rx="30" fill="rgba(255,255,255,0.25)" stroke="rgba(25,50,65,0.20)"/>
+  
+  <rect x="0" y="560" width="1200" height="200" fill="#425a67"/>
+  <rect x="170" y="340" width="90" height="220" fill="#5f7f94"/>
+  <rect x="280" y="280" width="100" height="280" fill="#6d90a6"/>
+  <rect x="400" y="320" width="110" height="240" fill="#58788b"/>
+  <rect x="530" y="250" width="115" height="310" fill="#7194a9"/>
+  <rect x="665" y="300" width="100" height="260" fill="#608195"/>
+  <rect x="785" y="230" width="120" height="330" fill="#769ab0"/>
+  <rect x="925" y="290" width="100" height="270" fill="#5e7f93"/>
+
+  <rect x="470" y="130" width="260" height="120" rx="18" fill="#c8dce8" stroke="#4d6d80" stroke-width="5"/>
+  <rect x="530" y="165" width="140" height="50" rx="10" fill="#7ea4bb"/>
+  <line x1="470" y1="190" x2="420" y2="190" stroke="#4d6d80" stroke-width="7"/>
+  <line x1="730" y1="190" x2="780" y2="190" stroke="#4d6d80" stroke-width="7"/>
+
+  <circle cx="150" cy="180" r="24" fill="#a5c2d2"/>
+  <circle cx="260" cy="110" r="20" fill="#a5c2d2"/>
+  <circle cx="340" cy="200" r="18" fill="#a5c2d2"/>
+  <line x1="150" y1="180" x2="260" y2="110" stroke="#dce9f1" stroke-width="5"/>
+  <line x1="260" y1="110" x2="340" y2="200" stroke="#dce9f1" stroke-width="5"/>
+  <line x1="340" y1="200" x2="470" y2="190" stroke="#dce9f1" stroke-width="5"/>
+
+</svg>

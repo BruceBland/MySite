@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="t d">
+  <title id="t">Managed Funds to ETFs</title>
+  <desc id="d">Illustration of portfolio packaging into exchange-traded structures.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#dce8d9"/>
+      <stop offset="52%" stop-color="#b8cdb8"/>
+      <stop offset="100%" stop-color="#98b39a"/>
+    </linearGradient>
+    <pattern id="dot" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.2" fill="rgba(255,255,255,0.28)"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(15,35,45,0.24)"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <polygon points="0,0 9,4.5 0,9" fill="#1d3b4d"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <rect width="1200" height="760" fill="url(#dot)"/>
+  <rect x="40" y="40" width="1120" height="680" rx="30" fill="rgba(255,255,255,0.25)" stroke="rgba(25,50,65,0.20)"/>
+  
+  <rect x="0" y="560" width="1200" height="200" fill="#5f7f6c"/>
+  <rect x="140" y="260" width="300" height="250" rx="22" fill="#d3b275" stroke="#83642b" stroke-width="5"/>
+  <path d="M170 335 L410 335" stroke="#8b6b32" stroke-width="8"/>
+  <path d="M170 395 L410 395" stroke="#8b6b32" stroke-width="8"/>
+  <path d="M170 455 L410 455" stroke="#8b6b32" stroke-width="8"/>
+
+  <rect x="190" y="285" width="40" height="40" fill="#79a9c2"/>
+  <rect x="250" y="285" width="40" height="40" fill="#5e8ea9"/>
+  <rect x="310" y="285" width="40" height="40" fill="#79a9c2"/>
+  <rect x="370" y="285" width="40" height="40" fill="#5e8ea9"/>
+
+  <path d="M470 390 L680 390" stroke="#294d5f" stroke-width="10" marker-end="url(#arrow)"/>
+
+  <rect x="730" y="250" width="300" height="280" rx="20" fill="#6ea0b8" stroke="#2e556a" stroke-width="6" filter="url(#shadow)"/>
+  <rect x="800" y="320" width="160" height="140" rx="14" fill="#eaf2f7"/>
+  <rect x="835" y="355" width="90" height="70" rx="10" fill="#86aec3"/>
+
+  <circle cx="940" cy="205" r="46" fill="#7fc090"/>
+  <path d="M920 205 L940 175 L960 205 L940 235 Z" fill="#f6f6f6"/>
+
+</svg>

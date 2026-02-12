@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="t d">
+  <title id="t">Growth of Hong Kong</title>
+  <desc id="d">Illustration of Hong Kong harbor, skyline, and trade-linked markets.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d6e4f0"/>
+      <stop offset="52%" stop-color="#9ec0d5"/>
+      <stop offset="100%" stop-color="#6d8491"/>
+    </linearGradient>
+    <pattern id="dot" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.2" fill="rgba(255,255,255,0.28)"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(15,35,45,0.24)"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <polygon points="0,0 9,4.5 0,9" fill="#1d3b4d"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <rect width="1200" height="760" fill="url(#dot)"/>
+  <rect x="40" y="40" width="1120" height="680" rx="30" fill="rgba(255,255,255,0.25)" stroke="rgba(25,50,65,0.20)"/>
+  
+  <rect x="0" y="520" width="1200" height="240" fill="#2c5f7a"/>
+  <path d="M0 470 C200 420, 380 500, 600 470 C800 440, 980 510, 1200 470 L1200 520 L0 520 Z" fill="#4b89a9"/>
+  <path d="M0 450 C220 350, 380 340, 520 430 C680 350, 850 360, 1030 440 C1110 390, 1170 380, 1200 400 L1200 520 L0 520 Z" fill="#2f4c5d" opacity="0.65"/>
+
+  <rect x="160" y="250" width="70" height="270" fill="#3e5f73"/>
+  <rect x="245" y="220" width="78" height="300" fill="#50748a"/>
+  <rect x="340" y="280" width="90" height="240" fill="#416476"/>
+  <rect x="450" y="180" width="95" height="340" fill="#5a7f95"/>
+  <rect x="565" y="240" width="85" height="280" fill="#3f6275"/>
+  <rect x="670" y="200" width="72" height="320" fill="#53788f"/>
+  <rect x="760" y="260" width="88" height="260" fill="#3f6073"/>
+
+  <path d="M860 508 L1040 508 L1090 480 L890 480 Z" fill="#684c37"/>
+  <polygon points="940,480 1000,400 1000,480" fill="#f0e4c9"/>
+  <polygon points="1004,480 1065,420 1065,480" fill="#e0d0ae"/>
+  <rect x="975" y="460" width="7" height="48" fill="#5b4534"/>
+
+</svg>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="t d">
+  <title id="t">Growth of Trading Systems</title>
+  <desc id="d">Illustration of exchange software and broker connectivity infrastructure.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d5e2ea"/>
+      <stop offset="52%" stop-color="#a6bccd"/>
+      <stop offset="100%" stop-color="#7d95a5"/>
+    </linearGradient>
+    <pattern id="dot" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.2" fill="rgba(255,255,255,0.28)"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(15,35,45,0.24)"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <polygon points="0,0 9,4.5 0,9" fill="#1d3b4d"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <rect width="1200" height="760" fill="url(#dot)"/>
+  <rect x="40" y="40" width="1120" height="680" rx="30" fill="rgba(255,255,255,0.25)" stroke="rgba(25,50,65,0.20)"/>
+  
+  <rect x="0" y="560" width="1200" height="200" fill="#445f70"/>
+  <rect x="170" y="230" width="170" height="330" rx="14" fill="#2e4556" stroke="#1a2d3a" stroke-width="4"/>
+  <rect x="380" y="210" width="170" height="350" rx="14" fill="#375367" stroke="#1a2d3a" stroke-width="4"/>
+  <rect x="590" y="250" width="170" height="310" rx="14" fill="#2e4556" stroke="#1a2d3a" stroke-width="4"/>
+
+  <circle cx="255" cy="290" r="8" fill="#73d6a2"/>
+  <circle cx="255" cy="340" r="8" fill="#73d6a2"/>
+  <circle cx="255" cy="390" r="8" fill="#73d6a2"/>
+  <circle cx="465" cy="280" r="8" fill="#73d6a2"/>
+  <circle cx="465" cy="330" r="8" fill="#73d6a2"/>
+  <circle cx="465" cy="380" r="8" fill="#73d6a2"/>
+  <circle cx="675" cy="310" r="8" fill="#73d6a2"/>
+  <circle cx="675" cy="360" r="8" fill="#73d6a2"/>
+  <circle cx="675" cy="410" r="8" fill="#73d6a2"/>
+
+  <circle cx="930" cy="300" r="22" fill="#93b9ca"/>
+  <circle cx="1020" cy="240" r="22" fill="#93b9ca"/>
+  <circle cx="1040" cy="360" r="22" fill="#93b9ca"/>
+  <circle cx="920" cy="430" r="22" fill="#93b9ca"/>
+  <line x1="930" y1="300" x2="1020" y2="240" stroke="#2b4554" stroke-width="6"/>
+  <line x1="930" y1="300" x2="1040" y2="360" stroke="#2b4554" stroke-width="6"/>
+  <line x1="930" y1="300" x2="920" y2="430" stroke="#2b4554" stroke-width="6"/>
+  <line x1="465" y1="500" x2="930" y2="300" stroke="#2b4554" stroke-width="6" marker-end="url(#arrow)"/>
+
+</svg>

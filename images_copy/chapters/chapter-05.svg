@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="t d">
+  <title id="t">Pension Funds and Asset Managers</title>
+  <desc id="d">Illustration of institutional investors coordinating around allocation decisions.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d2dde5"/>
+      <stop offset="52%" stop-color="#aec4d2"/>
+      <stop offset="100%" stop-color="#90a68f"/>
+    </linearGradient>
+    <pattern id="dot" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.2" fill="rgba(255,255,255,0.28)"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(15,35,45,0.24)"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <polygon points="0,0 9,4.5 0,9" fill="#1d3b4d"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <rect width="1200" height="760" fill="url(#dot)"/>
+  <rect x="40" y="40" width="1120" height="680" rx="30" fill="rgba(255,255,255,0.25)" stroke="rgba(25,50,65,0.20)"/>
+  
+  <rect x="0" y="560" width="1200" height="200" fill="#5f7d85"/>
+  <circle cx="260" cy="360" r="86" fill="#6da0b2"/>
+  <path d="M260 360 L260 285 A75 75 0 0 1 325 398 Z" fill="#f4d37e"/>
+  <path d="M260 360 L325 398 A75 75 0 0 1 205 420 Z" fill="#d0e4ef"/>
+  <path d="M260 360 L205 420 A75 75 0 0 1 260 285 Z" fill="#87c295"/>
+
+  <circle cx="580" cy="330" r="42" fill="#f2d09a"/>
+  <rect x="530" y="378" width="100" height="126" rx="30" fill="#2e5467"/>
+  <circle cx="760" cy="330" r="42" fill="#f2d09a"/>
+  <rect x="710" y="378" width="100" height="126" rx="30" fill="#4d6b7e"/>
+  <circle cx="940" cy="330" r="42" fill="#f2d09a"/>
+  <rect x="890" y="378" width="100" height="126" rx="30" fill="#375a68"/>
+
+  <path d="M580 440 C640 415, 700 415, 760 440" stroke="#f0f6fb" stroke-width="10" fill="none"/>
+  <path d="M760 440 C820 415, 880 415, 940 440" stroke="#f0f6fb" stroke-width="10" fill="none"/>
+
+  <rect x="510" y="220" width="470" height="28" rx="12" fill="#d8e5ee"/>
+  <rect x="510" y="220" width="260" height="28" rx="12" fill="#4f9b72"/>
+
+</svg>

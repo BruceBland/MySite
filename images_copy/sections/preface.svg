@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="t d">
+  <title id="t">Preface Illustration</title>
+  <desc id="d">Illustration of progression from coffee-house origins to modern electronic trading infrastructure.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e9dfc8"/>
+      <stop offset="52%" stop-color="#c0d4da"/>
+      <stop offset="100%" stop-color="#9cb39a"/>
+    </linearGradient>
+    <pattern id="dot" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.2" fill="rgba(255,255,255,0.28)"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(15,35,45,0.24)"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <polygon points="0,0 9,4.5 0,9" fill="#1d3b4d"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <rect width="1200" height="760" fill="url(#dot)"/>
+  <rect x="40" y="40" width="1120" height="680" rx="30" fill="rgba(255,255,255,0.25)" stroke="rgba(25,50,65,0.20)"/>
+  
+  <rect x="0" y="560" width="1200" height="200" fill="#5a6d5f"/>
+  <line x1="120" y1="420" x2="1080" y2="420" stroke="#2d4b5a" stroke-width="10"/>
+  <circle cx="180" cy="420" r="20" fill="#d9b06a"/>
+  <circle cx="460" cy="420" r="20" fill="#d9b06a"/>
+  <circle cx="740" cy="420" r="20" fill="#d9b06a"/>
+  <circle cx="1020" cy="420" r="20" fill="#d9b06a"/>
+
+  <ellipse cx="180" cy="300" rx="78" ry="28" fill="#8f5f3c"/>
+  <rect x="135" y="250" width="90" height="55" rx="16" fill="#a8734b"/>
+
+  <rect x="400" y="250" width="120" height="110" rx="10" fill="#e8dcc2" stroke="#9f8b64" stroke-width="4"/>
+  <line x1="420" y1="290" x2="500" y2="290" stroke="#b1a07d" stroke-width="6"/>
+  <line x1="420" y1="320" x2="490" y2="320" stroke="#c3b28f" stroke-width="6"/>
+
+  <line x1="720" y1="230" x2="720" y2="360" stroke="#53463f" stroke-width="8"/>
+  <line x1="720" y1="230" x2="790" y2="270" stroke="#53463f" stroke-width="8"/>
+  <circle cx="790" cy="270" r="10" fill="#dcc89d"/>
+
+  <rect x="930" y="220" width="180" height="170" rx="12" fill="#354f60" stroke="#1e3340" stroke-width="4"/>
+  <circle cx="970" cy="260" r="8" fill="#72d2a0"/>
+  <circle cx="970" cy="300" r="8" fill="#72d2a0"/>
+  <circle cx="970" cy="340" r="8" fill="#72d2a0"/>
+
+</svg>

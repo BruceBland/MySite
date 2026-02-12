@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="t d">
+  <title id="t">Post-War Rebuilding</title>
+  <desc id="d">Illustration of reconstruction, cables, and global financial reconnection.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d4e6ef"/>
+      <stop offset="52%" stop-color="#a8c4d3"/>
+      <stop offset="100%" stop-color="#97ae92"/>
+    </linearGradient>
+    <pattern id="dot" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.2" fill="rgba(255,255,255,0.28)"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(15,35,45,0.24)"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <polygon points="0,0 9,4.5 0,9" fill="#1d3b4d"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <rect width="1200" height="760" fill="url(#dot)"/>
+  <rect x="40" y="40" width="1120" height="680" rx="30" fill="rgba(255,255,255,0.25)" stroke="rgba(25,50,65,0.20)"/>
+  
+  <rect x="0" y="540" width="1200" height="220" fill="#5e715c"/>
+  <circle cx="350" cy="320" r="130" fill="#8fc0d8" stroke="#40657a" stroke-width="6"/>
+  <ellipse cx="350" cy="320" rx="130" ry="45" fill="none" stroke="#5a8399" stroke-width="4"/>
+  <ellipse cx="350" cy="320" rx="70" ry="130" fill="none" stroke="#5a8399" stroke-width="4"/>
+
+  <line x1="530" y1="230" x2="530" y2="540" stroke="#516270" stroke-width="10"/>
+  <line x1="530" y1="230" x2="680" y2="190" stroke="#516270" stroke-width="10"/>
+  <line x1="680" y1="190" x2="680" y2="240" stroke="#516270" stroke-width="10"/>
+  <rect x="650" y="240" width="60" height="45" fill="#d8a85f"/>
+  <rect x="720" y="280" width="90" height="260" fill="#7f96a4"/>
+  <rect x="830" y="340" width="82" height="200" fill="#6f8797"/>
+
+  <line x1="150" y1="160" x2="250" y2="300" stroke="#53463f" stroke-width="8"/>
+  <line x1="250" y1="300" x2="250" y2="540" stroke="#53463f" stroke-width="8"/>
+  <line x1="250" y1="300" x2="380" y2="220" stroke="#53463f" stroke-width="8"/>
+  <circle cx="150" cy="160" r="14" fill="#d8c7a0"/>
+  <circle cx="250" cy="300" r="14" fill="#d8c7a0"/>
+  <circle cx="380" cy="220" r="14" fill="#d8c7a0"/>
+  <line x1="150" y1="160" x2="380" y2="220" stroke="#d8c7a0" stroke-width="4" stroke-dasharray="7 7"/>
+
+</svg>

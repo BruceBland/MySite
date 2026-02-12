@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="t d">
+  <title id="t">Initial Public Offerings</title>
+  <desc id="d">Illustration of company listing, offering documents, and growth capital.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e9dfc7"/>
+      <stop offset="52%" stop-color="#c7d5dc"/>
+      <stop offset="100%" stop-color="#9ab68e"/>
+    </linearGradient>
+    <pattern id="dot" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.2" fill="rgba(255,255,255,0.28)"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(15,35,45,0.24)"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <polygon points="0,0 9,4.5 0,9" fill="#1d3b4d"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <rect width="1200" height="760" fill="url(#dot)"/>
+  <rect x="40" y="40" width="1120" height="680" rx="30" fill="rgba(255,255,255,0.25)" stroke="rgba(25,50,65,0.20)"/>
+  
+  <rect x="0" y="560" width="1200" height="200" fill="#577b68"/>
+  <rect x="140" y="310" width="320" height="250" rx="8" fill="#8fa3ad"/>
+  <rect x="190" y="360" width="54" height="54" fill="#d8e2ea"/>
+  <rect x="266" y="360" width="54" height="54" fill="#d8e2ea"/>
+  <rect x="342" y="360" width="54" height="54" fill="#d8e2ea"/>
+  <rect x="190" y="436" width="54" height="54" fill="#d8e2ea"/>
+  <rect x="266" y="436" width="54" height="54" fill="#d8e2ea"/>
+  <rect x="342" y="436" width="54" height="54" fill="#d8e2ea"/>
+  <rect x="230" y="280" width="140" height="50" rx="8" fill="#5d7c89"/>
+
+  <rect x="610" y="230" width="360" height="300" rx="18" fill="#fff8e9" stroke="#b2a07a" stroke-width="4" filter="url(#shadow)"/>
+  <line x1="670" y1="290" x2="920" y2="290" stroke="#c4b38d" stroke-width="8"/>
+  <line x1="670" y1="340" x2="920" y2="340" stroke="#d2c4a4" stroke-width="8"/>
+  <line x1="670" y1="390" x2="860" y2="390" stroke="#d2c4a4" stroke-width="8"/>
+  <path d="M670 480 L860 300" stroke="#2b6f4f" stroke-width="10" fill="none" marker-end="url(#arrow)"/>
+
+  <path d="M530 170 C530 120, 590 110, 620 155 C650 110, 710 120, 710 170 L710 210 L530 210 Z" fill="#d5a33b" stroke="#845f20" stroke-width="4"/>
+  <rect x="610" y="210" width="20" height="45" fill="#845f20"/>
+  <ellipse cx="620" cy="258" rx="58" ry="15" fill="#8b6b32"/>
+
+  <circle cx="520" cy="520" r="24" fill="#d6b268" stroke="#8a6a2f" stroke-width="3"/>
+  <circle cx="560" cy="510" r="24" fill="#e0c079" stroke="#8a6a2f" stroke-width="3"/>
+  <circle cx="600" cy="520" r="24" fill="#d6b268" stroke="#8a6a2f" stroke-width="3"/>
+
+</svg>
