@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Donkey Kong icon">
+  <rect width="64" height="64" rx="10" fill="#140b10" />
+  <rect x="8" y="42" width="48" height="6" rx="2" fill="#d62f40" transform="rotate(-8 32 45)" />
+  <rect x="8" y="29" width="48" height="6" rx="2" fill="#d62f40" transform="rotate(8 32 32)" />
+  <rect x="8" y="16" width="48" height="6" rx="2" fill="#d62f40" transform="rotate(-8 32 19)" />
+  <rect x="30" y="11" width="4" height="40" rx="2" fill="#65d6eb" />
+  <circle cx="16" cy="48" r="3" fill="#ffd45b" />
+  <circle cx="46" cy="14" r="3" fill="#ffd45b" />
+  <rect x="7.5" y="7.5" width="49" height="49" rx="3" fill="none" stroke="#4f638f" stroke-width="1.5" />
+</svg>

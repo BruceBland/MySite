@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Donkey Kong Arcade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --bg: #050607;
+      --panel: #0f1218;
+      --line: #253347;
+      --text: #f6f7f8;
+      --accent: #ffd45b;
+      --girder: #d62f40;
+      --ladder: #65d6eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-image:
+        linear-gradient(180deg, rgba(245, 247, 250, 0.72) 0%, rgba(238, 243, 255, 0.78) 100%),
+        radial-gradient(1200px 700px at 12% -20%, rgba(219, 231, 255, 0.5) 0%, transparent 66%),
+        radial-gradient(1100px 620px at 95% 12%, rgba(216, 245, 255, 0.46) 0%, transparent 64%),
+        url("BackgroundImage.jpeg");
+      background-size: auto, auto, auto, cover;
+      background-position: center, center, center, center;
+      background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
+      background-attachment: scroll, scroll, scroll, fixed;
+      color: var(--text);
+      font-family: "Outfit", "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 4.8rem 16px 16px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    #app {
+      width: min(832px, 100%);
+      display: grid;
+      grid-template-columns: minmax(320px, 1fr) 224px;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .title,
+    .hud,
+    .controls,
+    .leaderboard-panel h2,
+    #leaderboardList li,
+    .dialog,
+    .dialog input,
+    .dialog button {
+      font-family: "Press Start 2P", "Courier New", monospace;
+    }
+
+    .bg-glow {
+      position: fixed;
+      width: 32rem;
+      height: 32rem;
+      border-radius: 999px;
+      filter: blur(56px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glow-1 {
+      top: -14rem;
+      left: -10rem;
+      background: rgba(16, 102, 255, 0.22);
+    }
+
+    .bg-glow-2 {
+      bottom: -16rem;
+      right: -12rem;
+      background: rgba(0, 166, 166, 0.2);
+    }
+
+    .home-link-fixed {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 10;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.64rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.16);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+      backdrop-filter: blur(10px);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    .home-link-fixed:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.22);
+    }
+
+    .game-panel,
+    .leaderboard-panel {
+      background: linear-gradient(180deg, #101621 0%, #0b0f15 100%);
+      border: 3px solid var(--line);
+      border-radius: 10px;
+      box-shadow: 0 0 0 2px #000 inset, 0 16px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .game-panel {
+      padding: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 10px;
+      color: #e7eaef;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      text-align: center;
+      color: var(--accent);
+      font-size: clamp(16px, 2.2vw, 20px);
+      text-shadow: 0 0 10px rgba(255, 211, 90, 0.5);
+      margin: 2px 0 10px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #020304;
+      border: 2px solid #202a3a;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .controls {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 10px;
+      color: #bec8d4;
+      line-height: 1.4;
+    }
+
+    .leaderboard-panel {
+      padding: 12px;
+    }
+
+    .leaderboard-panel h2 {
+      margin: 0 0 10px;
+      text-align: center;
+      color: #9fe7f7;
+      font-size: 14px;
+    }
+
+    .bb-logo {
+      margin: 0 0 10px;
+      border: 2px solid #2d4768;
+      border-radius: 8px;
+      padding: 9px 8px;
+      text-align: center;
+      background: linear-gradient(160deg, #112233 0%, #0a1522 100%);
+      box-shadow: inset 0 0 0 1px rgba(159, 231, 247, 0.2);
+    }
+
+    .bb-logo .brand {
+      display: block;
+      color: #e8f3ff;
+      font-size: 13px;
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+
+    .bb-logo .sub {
+      display: block;
+      margin-top: 5px;
+      color: #9fe7f7;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+    }
+
+    #leaderboardList {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 6px;
+    }
+
+    #leaderboardList li {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      font-size: 10px;
+      padding: 7px 6px;
+      border: 1px solid #253347;
+      background: #0f151f;
+      border-radius: 6px;
+    }
+
+    .rank {
+      color: #ffd45b;
+      text-align: right;
+    }
+
+    .entry-name {
+      color: #f6f7f8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .entry-score {
+      color: #99f7a0;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(3, 4, 7, 0.88);
+      z-index: 20;
+      padding: 16px;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .dialog {
+      width: min(460px, 100%);
+      border: 2px solid #3c4a63;
+      border-radius: 8px;
+      background: #0f1420;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .dialog h3 {
+      margin: 0 0 10px;
+      color: #ffd45b;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .dialog p {
+      margin: 0 0 10px;
+      font-size: 10px;
+      color: #d7e0eb;
+      line-height: 1.6;
+    }
+
+    .dialog input {
+      width: 100%;
+      border: 2px solid #3d4a61;
+      border-radius: 6px;
+      background: #0a0f17;
+      color: #fff;
+      font-family: inherit;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    .dialog button {
+      width: 100%;
+      border: 0;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #ffd45b 0%, #f2bb2f 100%);
+      color: #1f1a0b;
+      font-family: inherit;
+      font-size: 11px;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .dialog button:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+
+    @media (max-width: 920px) {
+      #app {
+        grid-template-columns: 1fr;
+      }
+
+      #leaderboardList li {
+        font-size: 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
+  <a class="home-link-fixed" href="games.html">Home</a>
+  <div id="app">
+    <section class="game-panel">
+      <h1 class="title">DONKEY KONG</h1>
+      <div class="hud">
+        <div id="hudName">PLAYER: ---</div>
+        <div id="hudScore">SCORE: 0</div>
+        <div id="hudLives">LIVES: 3</div>
+        <div id="hudLevel">LEVEL: 1</div>
+      </div>
+      <canvas id="gameCanvas" width="640" height="560" aria-label="Donkey Kong game area"></canvas>
+      <div class="controls">MOVE: Arrow Keys | JUMP: Space | CLIMB: Up/Down</div>
+
+      <div id="startOverlay" class="overlay">
+        <form id="startForm" class="dialog" autocomplete="off">
+          <h3 id="overlayTitle">ENTER YOUR NAME</h3>
+          <p id="overlayText">Classic arcade style. Avoid barrels and reach the shed.</p>
+          <input id="playerNameInput" type="text" name="playerName" maxlength="12" required placeholder="PLAYER NAME" />
+          <button id="startButton" type="submit" disabled>START GAME</button>
+        </form>
+      </div>
+    </section>
+
+    <aside class="leaderboard-panel">
+      <div class="bb-logo" aria-label="BB Games logo">
+        <span class="brand">BB GAMES</span>
+        <span class="sub">Donkey Kong Arcade</span>
+      </div>
+      <h2>LEADERBOARD</h2>
+      <ol id="leaderboardList"></ol>
+    </aside>
+  </div>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+
+      const hudName = document.getElementById("hudName");
+      const hudScore = document.getElementById("hudScore");
+      const hudLives = document.getElementById("hudLives");
+      const hudLevel = document.getElementById("hudLevel");
+
+      const startOverlay = document.getElementById("startOverlay");
+      const startForm = document.getElementById("startForm");
+      const playerNameInput = document.getElementById("playerNameInput");
+      const startButton = document.getElementById("startButton");
+      const overlayTitle = document.getElementById("overlayTitle");
+      const overlayText = document.getElementById("overlayText");
+
+      const leaderboardList = document.getElementById("leaderboardList");
+      const LEADERBOARD_KEY = "dk_arcade_leaderboard_v1";
+
+      const WORLD = {
+        width: canvas.width,
+        height: canvas.height,
+        gravity: 0.36,
+        playerSpeed: 2.4,
+        jumpSpeed: 8.6,
+        climbSpeed: 1.9,
+        barrelSpeed: 1.45,
+        barrelFallSpeed: 2.0,
+        barrelSpawnFrames: 135
+      };
+
+      const platforms = [
+        { x1: 56, x2: 584, y: 124, slope: 0.04 },
+        { x1: 56, x2: 584, y: 198, slope: -0.04 },
+        { x1: 56, x2: 584, y: 272, slope: 0.04 },
+        { x1: 56, x2: 584, y: 346, slope: -0.04 },
+        { x1: 56, x2: 584, y: 420, slope: 0.04 },
+        { x1: 56, x2: 584, y: 494, slope: -0.04 }
+      ];
+
+      const ladders = [
+        { x: 204, from: 0, to: 1 },
+        { x: 468, from: 0, to: 1 },
+        { x: 340, from: 1, to: 2 },
+        { x: 152, from: 2, to: 3 },
+        { x: 430, from: 2, to: 3 },
+        { x: 278, from: 3, to: 4 },
+        { x: 506, from: 4, to: 5 }
+      ];
+
+      const goal = {
+        x: 170,
+        width: 56,
+        height: 34
+      };
+
+      const donkey = {
+        x: 114,
+        yOffset: -34,
+        width: 46,
+        height: 34
+      };
+
+      const keys = {
+        left: false,
+        right: false,
+        up: false,
+        down: false,
+        jump: false
+      };
+
+      let frame = 0;
+      let state = "ready";
+      let playerName = "";
+      let gameMessage = "";
+      let activeBarrelId = 1;
+      let level = 1;
+      let levelClearTimer = 0;
+      let jumpBufferFrames = 0;
+      const LEVEL_CLEAR_DURATION = 170;
+      const JUMP_BUFFER_MAX = 8;
+
+      let player;
+      let barrels;
+      let spawnTimer;
+      let flashTimer;
+      let leaderboard = [];
+
+      function yOnPlatform(platform, x) {
+        return platform.y + platform.slope * (x - platform.x1);
+      }
+
+      function ladderBounds(ladder) {
+        const top = yOnPlatform(platforms[ladder.from], ladder.x);
+        const bottom = yOnPlatform(platforms[ladder.to], ladder.x);
+        return {
+          left: ladder.x - 9,
+          right: ladder.x + 9,
+          top,
+          bottom
+        };
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function loadLeaderboard() {
+        try {
+          const data = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
+          if (!Array.isArray(data)) {
+            return [];
+          }
+          return data.filter(entry => entry && typeof entry.name === "string" && typeof entry.score === "number");
+        } catch {
+          return [];
+        }
+      }
+
+      function saveLeaderboardEntry(name, score) {
+        const cleaned = name.trim().toUpperCase().slice(0, 12);
+        if (!cleaned) {
+          return;
+        }
+        leaderboard.push({
+          name: cleaned,
+          score,
+          date: new Date().toISOString()
+        });
+        leaderboard.sort((a, b) => b.score - a.score);
+        leaderboard = leaderboard.slice(0, 10);
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
+        renderLeaderboard();
+      }
+
+      function renderLeaderboard() {
+        leaderboardList.innerHTML = "";
+        const entries = leaderboard.length ? leaderboard : [{ name: "NO SCORES", score: 0 }];
+
+        entries.forEach((entry, index) => {
+          const item = document.createElement("li");
+          const rank = document.createElement("span");
+          const name = document.createElement("span");
+          const score = document.createElement("span");
+
+          rank.className = "rank";
+          name.className = "entry-name";
+          score.className = "entry-score";
+
+          rank.textContent = String(index + 1).padStart(2, "0");
+          name.textContent = entry.name;
+          score.textContent = String(entry.score);
+
+          item.append(rank, name, score);
+          leaderboardList.appendChild(item);
+        });
+      }
+
+      function applyLevelDifficulty() {
+        const levelIndex = Math.max(0, level - 1);
+        WORLD.barrelSpeed = 1.45 + levelIndex * 0.1;
+        WORLD.barrelFallSpeed = 2.0 + levelIndex * 0.06;
+        WORLD.barrelSpawnFrames = Math.max(70, 135 - levelIndex * 8);
+      }
+
+      function resetEntities(keepProgress = false) {
+        const ground = platforms[5];
+        const preservedLives = keepProgress && player ? player.lives : 3;
+        const preservedScore = keepProgress && player ? player.score : 0;
+        player = {
+          x: 74,
+          y: yOnPlatform(ground, 74),
+          width: 14,
+          height: 18,
+          vx: 0,
+          vy: 0,
+          lives: preservedLives,
+          score: preservedScore,
+          onGround: false,
+          climbing: false,
+          facing: 1,
+          iFrames: 0,
+          jumpOriginPlatform: null
+        };
+
+        barrels = [];
+        spawnTimer = WORLD.barrelSpawnFrames;
+        flashTimer = 0;
+      }
+
+      function respawnPlayer() {
+        const ground = platforms[5];
+        player.x = 74;
+        player.y = yOnPlatform(ground, 74);
+        player.vx = 0;
+        player.vy = 0;
+        player.onGround = false;
+        player.climbing = false;
+        player.iFrames = 90;
+        player.jumpOriginPlatform = null;
+      }
+
+      function startGame() {
+        playerName = playerNameInput.value.trim().toUpperCase().slice(0, 12);
+        if (!playerName) {
+          return;
+        }
+
+        level = 1;
+        levelClearTimer = 0;
+        applyLevelDifficulty();
+        resetEntities(false);
+        state = "running";
+        gameMessage = "";
+
+        hudName.textContent = `PLAYER: ${playerName}`;
+        updateHud();
+
+        startOverlay.classList.add("hidden");
+        playerNameInput.blur();
+      }
+
+      function showOverlay(title, text, buttonText) {
+        overlayTitle.textContent = title;
+        overlayText.textContent = text;
+        startButton.textContent = buttonText;
+        startOverlay.classList.remove("hidden");
+        startButton.disabled = !playerNameInput.value.trim();
+      }
+
+      function advanceToNextLevel() {
+        level += 1;
+        levelClearTimer = 0;
+        applyLevelDifficulty();
+        resetEntities(true);
+        state = "running";
+        gameMessage = "";
+        updateHud();
+      }
+
+      function completeLevel() {
+        if (state !== "running") {
+          return;
+        }
+
+        player.score += 1200;
+        updateHud();
+        state = "levelclear";
+        gameMessage = `LEVEL ${level} CLEAR`;
+        levelClearTimer = LEVEL_CLEAR_DURATION;
+        barrels = [];
+      }
+
+      function endRun() {
+        if (state === "gameover") {
+          return;
+        }
+
+        state = "gameover";
+        gameMessage = "GAME OVER";
+        saveLeaderboardEntry(playerName, player.score);
+
+        const text = `Reached level ${level}. Final score: ${player.score}.`;
+
+        showOverlay("GAME OVER", text, "PLAY AGAIN");
+      }
+
+      function updateHud() {
+        hudScore.textContent = `SCORE: ${player.score}`;
+        hudLives.textContent = `LIVES: ${player.lives}`;
+        hudLevel.textContent = `LEVEL: ${level}`;
+      }
+
+      function getNearbyLadder(entity) {
+        const centerX = entity.x + entity.width / 2;
+        const feetY = entity.y;
+
+        for (const ladder of ladders) {
+          const b = ladderBounds(ladder);
+          if (centerX >= b.left - 6 && centerX <= b.right + 6 && feetY >= b.top - 12 && feetY <= b.bottom + 12) {
+            return { ladder, bounds: b };
+          }
+        }
+        return null;
+      }
+
+      function getPlatformIndexAt(x, y, tolerance = 5) {
+        for (let i = 0; i < platforms.length; i += 1) {
+          const platform = platforms[i];
+          if (x < platform.x1 - 2 || x > platform.x2 + 2) {
+            continue;
+          }
+          const platformY = yOnPlatform(platform, x);
+          if (Math.abs(y - platformY) <= tolerance) {
+            return i;
+          }
+        }
+        return -1;
+      }
+
+      function handlePlayerMovement() {
+        const previousY = player.y;
+        if (jumpBufferFrames > 0) {
+          jumpBufferFrames -= 1;
+        }
+
+        if (player.iFrames > 0) {
+          player.iFrames -= 1;
+        }
+
+        if (!player.climbing) {
+          player.vx = 0;
+          if (keys.left) {
+            player.vx = -WORLD.playerSpeed;
+            player.facing = -1;
+          }
+          if (keys.right) {
+            player.vx = WORLD.playerSpeed;
+            player.facing = 1;
+          }
+
+          if (player.onGround && jumpBufferFrames > 0) {
+            const centerX = player.x + player.width / 2;
+            const origin = getPlatformIndexAt(centerX, player.y, 5);
+            player.jumpOriginPlatform = origin >= 0 ? origin : null;
+            player.vy = -WORLD.jumpSpeed;
+            player.onGround = false;
+            jumpBufferFrames = 0;
+          }
+
+          const ladderNear = getNearbyLadder(player);
+          if (ladderNear && (keys.up || keys.down)) {
+            player.climbing = true;
+            player.vy = 0;
+            player.vx = 0;
+            player.jumpOriginPlatform = null;
+            player.x = ladderNear.ladder.x - player.width / 2;
+          }
+        }
+
+        if (player.climbing) {
+          player.vx = 0;
+          if (keys.up) {
+            player.vy = -WORLD.climbSpeed;
+          } else if (keys.down) {
+            player.vy = WORLD.climbSpeed;
+          } else {
+            player.vy = 0;
+          }
+
+          player.y += player.vy;
+          const ladderNear = getNearbyLadder(player);
+          if (ladderNear) {
+            player.x = ladderNear.ladder.x - player.width / 2;
+            const topStop = ladderNear.bounds.top;
+            const bottomStop = ladderNear.bounds.bottom;
+            player.y = clamp(player.y, topStop, bottomStop);
+
+            const atTop = Math.abs(player.y - topStop) < 1;
+            const atBottom = Math.abs(player.y - bottomStop) < 1;
+            if ((atTop && !keys.up) || (atBottom && !keys.down)) {
+              player.climbing = false;
+              player.onGround = true;
+              player.vy = 0;
+              player.jumpOriginPlatform = null;
+            }
+          } else {
+            player.climbing = false;
+          }
+        } else {
+          player.x += player.vx;
+          player.vy += WORLD.gravity;
+          player.y += player.vy;
+        }
+
+        player.x = clamp(player.x, 24, WORLD.width - 24 - player.width);
+
+        if (!player.climbing) {
+          player.onGround = false;
+
+          for (let i = 0; i < platforms.length; i += 1) {
+            const platform = platforms[i];
+            const centerX = player.x + player.width / 2;
+            if (centerX < platform.x1 - 2 || centerX > platform.x2 + 2) {
+              continue;
+            }
+
+            if (player.jumpOriginPlatform !== null && i < player.jumpOriginPlatform) {
+              continue;
+            }
+
+            const platformY = yOnPlatform(platform, centerX);
+            if (previousY <= platformY + 3 && player.y >= platformY - 2 && player.vy >= 0) {
+              player.y = platformY;
+              player.vy = 0;
+              player.onGround = true;
+              player.jumpOriginPlatform = null;
+              break;
+            }
+          }
+        }
+
+        if (player.y > WORLD.height + 30) {
+          player.lives = Math.max(0, player.lives - 1);
+          updateHud();
+          if (player.lives <= 0) {
+            endRun();
+          } else {
+            respawnPlayer();
+          }
+        }
+      }
+
+      function spawnBarrel() {
+        const top = platforms[0];
+        const spawnX = donkey.x + donkey.width - 2;
+        barrels.push({
+          id: activeBarrelId++,
+          x: spawnX,
+          y: yOnPlatform(top, spawnX) - 2,
+          radius: 8,
+          vx: WORLD.barrelSpeed,
+          vy: 0,
+          onGround: true,
+          descending: false,
+          descendingLadder: null,
+          jumpScored: false
+        });
+      }
+
+      function maybeAssignLadderToBarrel(barrel) {
+        if (barrel.descending || !barrel.onGround) {
+          return;
+        }
+
+        for (const ladder of ladders) {
+          const b = ladderBounds(ladder);
+          const closeX = Math.abs(barrel.x - ladder.x) < 8;
+          const closeY = Math.abs(barrel.y - b.top) < 6;
+          if (closeX && closeY && Math.random() < 0.0055) {
+            barrel.descending = true;
+            barrel.descendingLadder = ladder;
+            barrel.vx = 0;
+            barrel.vy = WORLD.barrelFallSpeed;
+            barrel.x = ladder.x;
+            return;
+          }
+        }
+      }
+
+      function barrelCollision(barrel) {
+        if (state !== "running" || player.iFrames > 0) {
+          return;
+        }
+        const px = player.x + player.width / 2;
+        const py = player.y - player.height / 2;
+        const dx = px - barrel.x;
+        const dy = py - barrel.y;
+        const hitDistance = barrel.radius + Math.max(player.width, player.height) * 0.42;
+
+        if (dx * dx + dy * dy <= hitDistance * hitDistance) {
+          player.lives = Math.max(0, player.lives - 1);
+          updateHud();
+          flashTimer = 12;
+          if (player.lives <= 0) {
+            endRun();
+          } else {
+            respawnPlayer();
+          }
+        }
+      }
+
+      function maybeScoreJump(barrel) {
+        if (barrel.jumpScored || player.onGround || player.climbing) {
+          return;
+        }
+
+        const playerCenterX = player.x + player.width / 2;
+        const playerFeet = player.y;
+        const verticalGap = barrel.y - playerFeet;
+
+        if (Math.abs(playerCenterX - barrel.x) < 18 && verticalGap > 8 && verticalGap < 40) {
+          barrel.jumpScored = true;
+          player.score += 100;
+          updateHud();
+        }
+      }
+
+      function updateBarrels() {
+        if (state !== "running") {
+          return;
+        }
+
+        spawnTimer -= 1;
+        if (spawnTimer <= 0) {
+          spawnBarrel();
+          spawnTimer = WORLD.barrelSpawnFrames;
+        }
+
+        for (const barrel of barrels) {
+          if (barrel.descending && barrel.descendingLadder) {
+            const ladder = barrel.descendingLadder;
+            const lowerPlatform = platforms[ladder.to];
+            barrel.x = ladder.x;
+            barrel.y += barrel.vy;
+
+            const landingY = yOnPlatform(lowerPlatform, ladder.x);
+            if (barrel.y >= landingY) {
+              barrel.descending = false;
+              barrel.descendingLadder = null;
+              barrel.onGround = true;
+              barrel.y = landingY;
+              barrel.vx = Math.sign(lowerPlatform.slope) * WORLD.barrelSpeed;
+              if (barrel.vx === 0) {
+                barrel.vx = WORLD.barrelSpeed;
+              }
+              barrel.vy = 0;
+            }
+            barrelCollision(barrel);
+            if (state !== "running") {
+              return;
+            }
+            maybeScoreJump(barrel);
+            continue;
+          }
+
+          if (!barrel.onGround) {
+            barrel.vy += WORLD.gravity;
+            barrel.y += barrel.vy;
+            barrel.x += barrel.vx;
+          } else {
+            const currentPlatform = platforms.find(p => barrel.x >= p.x1 - 1 && barrel.x <= p.x2 + 1 && Math.abs(barrel.y - yOnPlatform(p, barrel.x)) < 3);
+
+            if (currentPlatform) {
+              barrel.vx = Math.sign(currentPlatform.slope) * WORLD.barrelSpeed;
+              if (barrel.vx === 0) {
+                barrel.vx = WORLD.barrelSpeed;
+              }
+              barrel.x += barrel.vx;
+              barrel.y = yOnPlatform(currentPlatform, barrel.x);
+            } else {
+              barrel.onGround = false;
+              barrel.vy = 0;
+            }
+          }
+
+          for (const platform of platforms) {
+            if (barrel.x < platform.x1 - 1 || barrel.x > platform.x2 + 1) {
+              continue;
+            }
+            const targetY = yOnPlatform(platform, barrel.x);
+            if (barrel.y >= targetY - 1 && barrel.y <= targetY + 6 && barrel.vy >= 0) {
+              barrel.y = targetY;
+              barrel.vy = 0;
+              barrel.onGround = true;
+              break;
+            }
+          }
+
+          maybeAssignLadderToBarrel(barrel);
+          barrelCollision(barrel);
+          if (state !== "running") {
+            return;
+          }
+          maybeScoreJump(barrel);
+        }
+
+        barrels = barrels.filter(barrel => barrel.y < WORLD.height + 30 && barrel.x > -30 && barrel.x < WORLD.width + 30);
+      }
+
+      function checkGoal() {
+        const topPlatform = platforms[0];
+        const playerCenterX = player.x + player.width / 2;
+        const playerTopY = yOnPlatform(topPlatform, playerCenterX);
+        const goalLeft = goal.x - goal.width / 2;
+        const goalRight = goal.x + goal.width / 2;
+        const overlapsGoalX = player.x + player.width >= goalLeft && player.x <= goalRight;
+        const onTopPlatform =
+          player.onGround &&
+          !player.climbing &&
+          playerCenterX >= topPlatform.x1 &&
+          playerCenterX <= topPlatform.x2 &&
+          Math.abs(player.y - playerTopY) <= 2.5;
+
+        if (overlapsGoalX && onTopPlatform) {
+          completeLevel();
+        }
+      }
+
+      function update() {
+        if (state === "levelclear") {
+          frame += 1;
+          if (levelClearTimer > 0) {
+            levelClearTimer -= 1;
+          } else {
+            advanceToNextLevel();
+          }
+          return;
+        }
+
+        if (state !== "running") {
+          return;
+        }
+
+        frame += 1;
+        player.score += 1;
+
+        handlePlayerMovement();
+        if (state !== "running") {
+          return;
+        }
+
+        checkGoal();
+        if (state !== "running") {
+          return;
+        }
+
+        updateBarrels();
+        updateHud();
+      }
+
+      function drawBackground() {
+        ctx.fillStyle = "#040507";
+        ctx.fillRect(0, 0, WORLD.width, WORLD.height);
+
+        for (let i = 0; i < WORLD.height; i += 4) {
+          ctx.fillStyle = i % 8 === 0 ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.0)";
+          ctx.fillRect(0, i, WORLD.width, 1);
+        }
+      }
+
+      function drawPlatforms() {
+        for (const p of platforms) {
+          const y1 = yOnPlatform(p, p.x1);
+          const y2 = yOnPlatform(p, p.x2);
+
+          ctx.strokeStyle = "#d62f40";
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.moveTo(p.x1, y1);
+          ctx.lineTo(p.x2, y2);
+          ctx.stroke();
+
+          ctx.strokeStyle = "#8b1622";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(p.x1, y1 + 3);
+          ctx.lineTo(p.x2, y2 + 3);
+          ctx.stroke();
+
+          ctx.fillStyle = "#ffd45b";
+          for (let x = p.x1 + 10; x < p.x2; x += 46) {
+            const y = yOnPlatform(p, x);
+            ctx.fillRect(x, y - 1, 4, 4);
+          }
+        }
+      }
+
+      function drawLadders() {
+        for (const ladder of ladders) {
+          const b = ladderBounds(ladder);
+          ctx.strokeStyle = "#65d6eb";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(b.left, b.top);
+          ctx.lineTo(b.left, b.bottom);
+          ctx.moveTo(b.right, b.top);
+          ctx.lineTo(b.right, b.bottom);
+          ctx.stroke();
+
+          ctx.lineWidth = 2;
+          for (let y = b.top + 5; y < b.bottom; y += 8) {
+            ctx.beginPath();
+            ctx.moveTo(b.left, y);
+            ctx.lineTo(b.right, y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      function drawDonkeyAndGoal() {
+        const dkPlatformY = yOnPlatform(platforms[0], donkey.x);
+        const gxPlatformY = yOnPlatform(platforms[0], goal.x);
+
+        ctx.fillStyle = "#7f4f2a";
+        ctx.fillRect(donkey.x, dkPlatformY + donkey.yOffset, donkey.width, donkey.height);
+        ctx.fillStyle = "#f6c092";
+        ctx.fillRect(donkey.x + 10, dkPlatformY + donkey.yOffset + 9, 11, 11);
+        ctx.fillStyle = "#2a1608";
+        ctx.fillRect(donkey.x + 30, dkPlatformY + donkey.yOffset + 12, 12, 14);
+
+        const shedX = goal.x - goal.width / 2;
+        const shedTopY = gxPlatformY - goal.height - 8;
+
+        ctx.fillStyle = "#6a4324";
+        ctx.fillRect(shedX, shedTopY, goal.width, goal.height);
+        ctx.strokeStyle = "#ffd45b";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(shedX, shedTopY, goal.width, goal.height);
+
+        ctx.fillStyle = "#8e5b30";
+        ctx.beginPath();
+        ctx.moveTo(shedX - 6, shedTopY);
+        ctx.lineTo(goal.x, shedTopY - 14);
+        ctx.lineTo(shedX + goal.width + 6, shedTopY);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#ffd45b";
+        ctx.font = "10px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("TARGET", goal.x, shedTopY + 21);
+        ctx.textAlign = "left";
+      }
+
+      function drawBarrels() {
+        for (const barrel of barrels) {
+          ctx.fillStyle = "#b86828";
+          ctx.beginPath();
+          ctx.arc(barrel.x, barrel.y - 6, barrel.radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = "#6b3310";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(barrel.x, barrel.y - 6, barrel.radius - 3, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = "#f3ca62";
+          ctx.beginPath();
+          ctx.moveTo(barrel.x - 5, barrel.y - 10);
+          ctx.lineTo(barrel.x + 5, barrel.y - 2);
+          ctx.stroke();
+        }
+      }
+
+      function drawPlayer() {
+        if (player.iFrames > 0 && Math.floor(player.iFrames / 6) % 2 === 0) {
+          return;
+        }
+
+        const px = Math.round(player.x);
+        const py = Math.round(player.y - player.height);
+
+        ctx.fillStyle = "#2f73ff";
+        ctx.fillRect(px + 2, py + 7, 10, 11);
+
+        ctx.fillStyle = "#d8313f";
+        ctx.fillRect(px, py + 10, 14, 6);
+
+        ctx.fillStyle = "#f7d8b5";
+        ctx.fillRect(px + 3, py + 1, 8, 8);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(px + (player.facing > 0 ? 8 : 2), py + 4, 2, 2);
+      }
+
+      function drawStatusText() {
+        if (!gameMessage || state === "levelclear") {
+          return;
+        }
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
+        ctx.fillRect(180, 244, 280, 58);
+        ctx.strokeStyle = "#ffd45b";
+        ctx.strokeRect(180, 244, 280, 58);
+        ctx.fillStyle = "#ffd45b";
+        ctx.font = "18px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(gameMessage, WORLD.width / 2, 279);
+        ctx.textAlign = "left";
+      }
+
+      function drawLevelTransition() {
+        if (state !== "levelclear") {
+          return;
+        }
+
+        const rawProgress = 1 - levelClearTimer / LEVEL_CLEAR_DURATION;
+        const progress = clamp(rawProgress, 0, 1);
+        const ease = progress < 0.5
+          ? 2 * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+        const pulse = 0.6 + 0.4 * Math.abs(Math.sin(frame * 0.14));
+        ctx.fillStyle = `rgba(4, 7, 12, ${0.42 + pulse * 0.22})`;
+        ctx.fillRect(0, 0, WORLD.width, WORLD.height);
+
+        const panelWidth = 430;
+        const panelHeight = 150;
+        const panelX = (WORLD.width - panelWidth) / 2;
+        const targetY = 130;
+        const panelY = -190 + ease * (targetY + 190);
+
+        ctx.fillStyle = "#111a26";
+        ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+        ctx.strokeStyle = "#ffd45b";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
+
+        for (let i = 0; i < 11; i += 1) {
+          const sparkX = (i * 63 + frame * 4) % (WORLD.width + 40) - 20;
+          const sparkY = 84 + (i % 5) * 20 + Math.sin((frame + i * 13) * 0.07) * 4;
+          ctx.fillStyle = i % 2 === 0 ? "#ffd45b" : "#65d6eb";
+          ctx.fillRect(sparkX, sparkY, 3, 3);
+        }
+
+        ctx.fillStyle = "#ffd45b";
+        ctx.font = "22px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(`LEVEL ${level} CLEAR`, WORLD.width / 2, panelY + 50);
+
+        ctx.fillStyle = "#dfe8f5";
+        ctx.font = "14px monospace";
+        ctx.fillText(`NEXT: LEVEL ${level + 1}`, WORLD.width / 2, panelY + 82);
+
+        const dots = ".".repeat((Math.floor(frame / 14) % 3) + 1);
+        ctx.fillStyle = "#99f7a0";
+        ctx.fillText(`LOADING${dots}`, WORLD.width / 2, panelY + 112);
+
+        const trackY = panelY + 126;
+        const runnerX = panelX + 24 + ease * (panelWidth - 88);
+        const barrelX = panelX + panelWidth - 22 - ease * (panelWidth - 88);
+
+        ctx.fillStyle = "#d62f40";
+        ctx.fillRect(panelX + 14, trackY + 8, panelWidth - 28, 5);
+
+        ctx.fillStyle = "#2f73ff";
+        ctx.fillRect(runnerX, trackY - 10, 8, 10);
+        ctx.fillStyle = "#d8313f";
+        ctx.fillRect(runnerX - 1, trackY - 4, 10, 4);
+        ctx.fillStyle = "#f7d8b5";
+        ctx.fillRect(runnerX + 1, trackY - 14, 6, 4);
+
+        ctx.fillStyle = "#b86828";
+        ctx.beginPath();
+        ctx.arc(barrelX, trackY + 1, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#6b3310";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(barrelX, trackY + 1, 4, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.textAlign = "left";
+      }
+
+      function render() {
+        drawBackground();
+        drawPlatforms();
+        drawLadders();
+        drawDonkeyAndGoal();
+        drawBarrels();
+        drawPlayer();
+        drawLevelTransition();
+        drawStatusText();
+
+        if (flashTimer > 0) {
+          ctx.fillStyle = "rgba(255, 72, 72, 0.25)";
+          ctx.fillRect(0, 0, WORLD.width, WORLD.height);
+          flashTimer -= 1;
+        }
+      }
+
+      function loop() {
+        update();
+        render();
+        requestAnimationFrame(loop);
+      }
+
+      window.addEventListener("keydown", event => {
+        const isJumpKey = event.code === "Space" || event.key === " " || event.key === "Spacebar";
+        if (event.code === "ArrowLeft") keys.left = true;
+        if (event.code === "ArrowRight") keys.right = true;
+        if (event.code === "ArrowUp") keys.up = true;
+        if (event.code === "ArrowDown") keys.down = true;
+        if (isJumpKey) {
+          keys.jump = true;
+          jumpBufferFrames = JUMP_BUFFER_MAX;
+        }
+
+        if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(event.code) || isJumpKey) {
+          event.preventDefault();
+        }
+      });
+
+      window.addEventListener("keyup", event => {
+        if (event.code === "ArrowLeft") keys.left = false;
+        if (event.code === "ArrowRight") keys.right = false;
+        if (event.code === "ArrowUp") keys.up = false;
+        if (event.code === "ArrowDown") keys.down = false;
+        if (event.code === "Space" || event.key === " " || event.key === "Spacebar") keys.jump = false;
+      });
+
+      playerNameInput.addEventListener("input", () => {
+        playerNameInput.value = playerNameInput.value.replace(/[^a-z0-9 ]/gi, "").toUpperCase();
+        startButton.disabled = !playerNameInput.value.trim();
+      });
+
+      startForm.addEventListener("submit", event => {
+        event.preventDefault();
+        if (!playerNameInput.value.trim()) {
+          startButton.disabled = true;
+          return;
+        }
+        startGame();
+      });
+
+      leaderboard = loadLeaderboard();
+      renderLeaderboard();
+      level = 1;
+      applyLevelDifficulty();
+      resetEntities(false);
+      showOverlay("ENTER YOUR NAME", "Type your name before starting. Reach the shed to clear each level.", "START GAME");
+      loop();
+    })();
+  </script>
+</body>
+</html>

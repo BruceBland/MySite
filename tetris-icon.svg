@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Tetris icon">
+  <rect width="64" height="64" rx="10" fill="#0a0f1b" />
+  <rect x="8" y="8" width="16" height="16" rx="2" fill="#37d5ff" />
+  <rect x="24" y="8" width="16" height="16" rx="2" fill="#37d5ff" />
+  <rect x="40" y="8" width="16" height="16" rx="2" fill="#37d5ff" />
+  <rect x="24" y="24" width="16" height="16" rx="2" fill="#ff4f5e" />
+  <rect x="40" y="24" width="16" height="16" rx="2" fill="#ff4f5e" />
+  <rect x="8" y="40" width="16" height="16" rx="2" fill="#ffd84d" />
+  <rect x="24" y="40" width="16" height="16" rx="2" fill="#ffd84d" />
+  <rect x="40" y="40" width="16" height="16" rx="2" fill="#ffd84d" />
+  <rect x="7.5" y="7.5" width="49" height="49" rx="3" fill="none" stroke="#4f638f" stroke-width="1.5" />
+</svg>

@@ -4,6 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PAC-MAN Arcade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;display=swap"
+    rel="stylesheet"
+  />
   <style>
     :root {
       --cabinet-dark: #1a0b06;
@@ -23,14 +29,72 @@
     body {
       margin: 0;
       min-height: 100%;
-      background:
-        radial-gradient(circle at 50% 15%, #212121 0%, #080808 45%, #020202 100%);
+      background-image:
+        linear-gradient(180deg, rgba(245, 247, 250, 0.72) 0%, rgba(238, 243, 255, 0.78) 100%),
+        radial-gradient(1200px 700px at 12% -20%, rgba(219, 231, 255, 0.5) 0%, transparent 66%),
+        radial-gradient(1100px 620px at 95% 12%, rgba(216, 245, 255, 0.46) 0%, transparent 64%),
+        url("BackgroundImage.jpeg");
+      background-size: auto, auto, auto, cover;
+      background-position: center, center, center, center;
+      background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
+      background-attachment: scroll, scroll, scroll, fixed;
       color: #fff;
       font-family: "Press Start 2P", "Courier New", monospace;
     }
 
     body {
-      padding: 12px;
+      padding: 4.8rem 12px 12px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .bg-glow {
+      position: fixed;
+      width: 32rem;
+      height: 32rem;
+      border-radius: 999px;
+      filter: blur(56px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glow-1 {
+      top: -14rem;
+      left: -10rem;
+      background: rgba(16, 102, 255, 0.22);
+    }
+
+    .bg-glow-2 {
+      bottom: -16rem;
+      right: -12rem;
+      background: rgba(0, 166, 166, 0.2);
+    }
+
+    .home-link-fixed {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 10;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.64rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.16);
+      text-decoration: none;
+      font-family: "Outfit", "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+      backdrop-filter: blur(10px);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    .home-link-fixed:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.22);
     }
 
     .layout {
@@ -40,6 +104,8 @@
       gap: 12px;
       align-items: start;
       grid-template-columns: minmax(0, 1fr);
+      position: relative;
+      z-index: 1;
     }
 
     .cabinet {
@@ -124,7 +190,7 @@
 
     .screen-wrap {
       position: relative;
-      width: min(100%, 448px);
+      width: min(100%, 363px);
       margin: 0 auto;
     }
 
@@ -224,6 +290,35 @@
       color: #ffd454;
       font-size: 0.76rem;
       letter-spacing: 1px;
+    }
+
+    .bb-logo {
+      margin: 0 0 10px;
+      border: 2px solid #6a2d19;
+      border-radius: 10px;
+      padding: 9px 8px;
+      text-align: center;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255, 212, 84, 0.18) 0%, rgba(255, 212, 84, 0) 60%),
+        linear-gradient(160deg, #3a1f12 0%, #1c120d 100%);
+      box-shadow: inset 0 0 0 1px rgba(255, 212, 84, 0.2);
+    }
+
+    .bb-logo .brand {
+      display: block;
+      color: #ffe6bb;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+
+    .bb-logo .sub {
+      display: block;
+      margin-top: 4px;
+      color: #fdb469;
+      font-size: 0.52rem;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
     }
 
     .name-form {
@@ -366,6 +461,9 @@
   </style>
 </head>
 <body>
+  <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
+  <a class="home-link-fixed" href="games.html">Home</a>
   <main class="layout">
     <section class="cabinet">
       <div class="marquee">PAC-MAN</div>
@@ -385,21 +483,13 @@
         </div>
         <div class="status" id="statusText"></div>
       </section>
-
-      <div class="controls-note">
-        Arrow Keys or WASD to move. P pauses. Enter restarts on Game Over.
-      </div>
-
-      <div class="dpad">
-        <button class="d-up" data-dir="up" aria-label="Move up">UP</button>
-        <button class="d-left" data-dir="left" aria-label="Move left">LEFT</button>
-        <button class="d-center" id="centerBtn" aria-label="Pause or restart">START / PAUSE</button>
-        <button class="d-right" data-dir="right" aria-label="Move right">RIGHT</button>
-        <button class="d-down" data-dir="down" aria-label="Move down">DOWN</button>
-      </div>
     </section>
 
     <aside class="leaderboard-panel" aria-label="Pac-Man leaderboard">
+      <div class="bb-logo" aria-label="BB Games logo">
+        <span class="brand">BB GAMES</span>
+        <span class="sub">Pac-Man Arcade</span>
+      </div>
       <h2>TOP SCORES</h2>
       <div class="name-form">
         <label for="playerName">PLAYER NAME</label>
@@ -407,8 +497,17 @@
         <button id="setNameBtn" type="button">SET NAME</button>
       </div>
       <p class="leaderboard-status" id="leaderboardStatus"></p>
-      <a class="home-link" href="index.html">Back to Home</a>
       <ol class="leaderboard-list" id="leaderboardList"></ol>
+      <div class="controls-note">
+        Arrow Keys or WASD to move. P pauses. Enter restarts on Game Over.
+      </div>
+      <div class="dpad">
+        <button class="d-up" data-dir="up" aria-label="Move up">UP</button>
+        <button class="d-left" data-dir="left" aria-label="Move left">LEFT</button>
+        <button class="d-center" id="centerBtn" aria-label="Pause or restart">START / PAUSE</button>
+        <button class="d-right" data-dir="right" aria-label="Move right">RIGHT</button>
+        <button class="d-down" data-dir="down" aria-label="Move down">DOWN</button>
+      </div>
     </aside>
   </main>
 
