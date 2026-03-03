@@ -68,11 +68,12 @@
     <main id="top">
       <section class="hero container reveal">
         <p class="eyebrow">Finance News Feed</p>
-        <h1>Latest Finance News From Google RSS (Last 7 Days)</h1>
+        <h1>Latest Finance News From Google RSS (Last 14 Days)</h1>
         <div class="hero-actions">
           <a
+            id="openGoogleFeed"
             class="btn btn-primary"
-            href="https://news.google.com/rss/search?q=brokerage+OR+banking+OR+%22wall+street%22+OR+FTSE100+OR+Nasdaq+-mortgage+-mortgages+when:7d&amp;hl=en-US&amp;gl=US&amp;ceid=US:en"
+            href="#"
             target="_blank"
             rel="noopener noreferrer"
             >Open Google Feed</a
@@ -86,7 +87,7 @@
           <h2>Finance Newspaper</h2>
         </div>
         <p class="muted">
-          Articles from the last 7 days open in a new tab and link directly to the source.
+          Articles from the last 14 days open in a new tab and link directly to the source.
         </p>
         <form id="newsSearchForm" class="card glass news-search-panel" role="search">
           <label class="news-search-label" for="newsKeyword"
@@ -118,44 +119,89 @@
 
     <script src="script.js?v=20260219-1"></script>
     <script>
-      const GOOGLE_RSS_URL = "https://news.google.com/rss/search?q=brokerage+OR+banking+OR+%22wall+street%22+OR+FTSE100+OR+Nasdaq+-mortgage+-mortgages+when:7d&hl=en-US&gl=US&ceid=US:en";
-      const FEED_ENDPOINTS = [
-        {
-          type: "xml",
-          url: "https://api.allorigins.win/get?url=" + encodeURIComponent(GOOGLE_RSS_URL),
-        },
-        {
-          type: "xml",
-          url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(GOOGLE_RSS_URL),
-        },
-        {
-          type: "xml",
-          url:
-            "https://r.jina.ai/http://news.google.com/rss/search?q=brokerage+OR+banking+OR+%22wall+street%22+OR+FTSE100+OR+Nasdaq+-mortgage+-mortgages+when:7d&hl=en-US&gl=US&ceid=US:en",
-        },
-        {
-          type: "xml",
-          url: GOOGLE_RSS_URL,
-        },
-        {
-          type: "rss2json",
-          url: "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(GOOGLE_RSS_URL),
-        },
+      const RECENT_ARTICLE_WINDOW_DAYS = 14;
+      const encodeQueryValue = (value) =>
+        encodeURIComponent(value).replace(
+          /[!'()*]/g,
+          (ch) => "%" + ch.charCodeAt(0).toString(16).toUpperCase()
+        );
+      const FINANCE_QUERY_BUCKETS = [
+        'banking OR "global banking" OR "bank earnings" OR "commercial banks" OR "investment banks"',
+        '"central bank" OR ECB OR "European Central Bank" OR "Bank of England" OR BoE OR "Bank of Japan" OR BoJ OR PBOC OR "Peoples Bank of China" OR RBI OR "Reserve Bank of India"',
+        'IMF OR BIS OR "interest rates" OR inflation OR "monetary policy" OR "bank regulation" OR "financial stability"',
       ];
-      const MAX_NEWS_ITEMS = 100;
+      const GOOGLE_RSS_LOCALE_PARAMS = [
+        "hl=en-GB&gl=GB&ceid=GB:en",
+        "hl=en-IN&gl=IN&ceid=IN:en",
+        "hl=en-SG&gl=SG&ceid=SG:en",
+      ];
+      const buildGoogleRssUrl = (queryBucket, localeParams) =>
+        "https://news.google.com/rss/search?q=" +
+        encodeQueryValue(queryBucket + " when:" + RECENT_ARTICLE_WINDOW_DAYS + "d") +
+        "&" +
+        localeParams;
+      const GOOGLE_RSS_URLS = GOOGLE_RSS_LOCALE_PARAMS.flatMap((localeParams) =>
+        FINANCE_QUERY_BUCKETS.map((queryBucket) =>
+          buildGoogleRssUrl(queryBucket, localeParams)
+        )
+      );
+      const FEED_ENDPOINTS = GOOGLE_RSS_URLS.flatMap((rssUrl) => {
+        const rssHttpUrl = rssUrl.replace(/^https:\/\//, "http://");
+        return [
+          {
+            type: "xml",
+            url: rssUrl,
+          },
+          {
+            type: "xml",
+            url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(rssUrl),
+          },
+          {
+            type: "xml",
+            url: "https://r.jina.ai/" + rssHttpUrl,
+          },
+          {
+            type: "rss2json",
+            url:
+              "https://api.rss2json.com/v1/api.json?rss_url=" +
+              encodeURIComponent(rssUrl),
+          },
+        ];
+      });
       const MAX_FETCH_ITEMS = 500;
-      const RECENT_ARTICLE_WINDOW_DAYS = 7;
+      const MAX_NEWS_ITEMS = MAX_FETCH_ITEMS;
       const RECENT_ARTICLE_WINDOW_MS = RECENT_ARTICLE_WINDOW_DAYS * 24 * 60 * 60 * 1000;
       const DEFAULT_NEWS_KEYWORD = "";
+      const FETCH_TIMEOUT_MS = 12000;
+      const MIN_ITEMS_BEFORE_ENRICH = 120;
+      const MAX_MERGED_ENDPOINT_RESULTS = 20;
+      const REFRESH_LABEL = "Refresh News";
 
       const newsContainer = document.getElementById("newsContainer");
       const errorMessage = document.getElementById("errorMessage");
       const refreshNewsButton = document.getElementById("refreshNews");
+      const openGoogleFeedLink = document.getElementById("openGoogleFeed");
       const newsSearchForm = document.getElementById("newsSearchForm");
       const newsKeywordInput = document.getElementById("newsKeyword");
       const clearNewsSearchButton = document.getElementById("clearNewsSearch");
       const newsSearchStatus = document.getElementById("newsSearchStatus");
       let lastLoadedNewsItems = [];
+      let isRefreshingNews = false;
+      openGoogleFeedLink.href = GOOGLE_RSS_URLS[0];
+
+      const wait = (ms) =>
+        new Promise((resolve) => {
+          setTimeout(resolve, ms);
+        });
+      const getEnrichWaitMs = (firstResultCount) => {
+        if (firstResultCount < 20) {
+          return 7000;
+        }
+        if (firstResultCount < 80) {
+          return 4500;
+        }
+        return 2000;
+      };
 
       const renderLoadingCards = () => {
         newsContainer.textContent = "";
@@ -244,7 +290,11 @@
         }
 
         newsSearchStatus.textContent =
-          "Showing all " + totalCount + " loaded headlines from the last 7 days.";
+          "Showing all " +
+          totalCount +
+          " loaded headlines from the last " +
+          RECENT_ARTICLE_WINDOW_DAYS +
+          " days.";
       };
 
       const applyNewsSearch = () => {
@@ -399,92 +449,166 @@
         return items;
       };
 
-      const fetchFeedItems = async () => {
-        let lastError;
+      const firstSuccessful = (promises) =>
+        new Promise((resolve, reject) => {
+          if (!promises.length) {
+            reject(new Error("Unable to load feed"));
+            return;
+          }
+
+          let pending = promises.length;
+          let lastError = new Error("Unable to load feed");
+
+          for (const promise of promises) {
+            Promise.resolve(promise)
+              .then(resolve)
+              .catch((error) => {
+                pending -= 1;
+                lastError = error || lastError;
+
+                if (pending === 0) {
+                  reject(lastError);
+                }
+              });
+          }
+        });
+
+      const fetchEndpointItems = async (endpoint) => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+        let payloadText = "";
+
+        try {
+          const response = await fetch(endpoint.url, {
+            method: "GET",
+            signal: controller.signal,
+            cache: "no-store",
+          });
+
+          if (!response.ok) {
+            throw new Error("Feed request failed with status " + response.status);
+          }
+
+          payloadText = await response.text();
+        } finally {
+          clearTimeout(timeout);
+        }
+
+        let payload = payloadText;
+        if (endpoint.url.includes("api.allorigins.win/get?")) {
+          try {
+            const wrapped = JSON.parse(payloadText);
+            if (wrapped && typeof wrapped.contents === "string") {
+              payload = wrapped.contents;
+            }
+          } catch (error) {
+            payload = payloadText;
+          }
+        }
+
+        const parsedItems =
+          endpoint.type === "rss2json"
+            ? parseItemsFromRss2Json(payload)
+            : parseItemsFromXml(payload);
+
+        if (!parsedItems.length) {
+          throw new Error("Feed returned no items");
+        }
+
+        return parsedItems.slice(0, MAX_FETCH_ITEMS);
+      };
+
+      const mergeNewsItemLists = (itemLists) => {
         const mergedItems = [];
         const itemIndexByLink = new Map();
 
-        for (const endpoint of FEED_ENDPOINTS) {
-          try {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 12000);
-            let payloadText = "";
+        for (const items of itemLists) {
+          if (!Array.isArray(items)) {
+            continue;
+          }
 
-            try {
-              const response = await fetch(endpoint.url, {
-                method: "GET",
-                signal: controller.signal,
-              });
-
-              if (!response.ok) {
-                throw new Error("Feed request failed with status " + response.status);
-              }
-
-              payloadText = await response.text();
-            } finally {
-              clearTimeout(timeout);
+          for (const item of items) {
+            if (!item || !item.link) {
+              continue;
             }
 
-            let payload = payloadText;
-            if (endpoint.url.includes("api.allorigins.win/get?")) {
-              try {
-                const wrapped = JSON.parse(payloadText);
-                if (wrapped && typeof wrapped.contents === "string") {
-                  payload = wrapped.contents;
-                }
-              } catch (error) {
-                payload = payloadText;
-              }
-            }
-
-            const parsedItems =
-              endpoint.type === "rss2json"
-                ? parseItemsFromRss2Json(payload)
-                : parseItemsFromXml(payload);
-
-            for (const item of parsedItems) {
-              if (!item || !item.link) {
-                continue;
-              }
-
-              const existingIndex = itemIndexByLink.get(item.link);
-              if (existingIndex === undefined) {
-                itemIndexByLink.set(item.link, mergedItems.length);
-                mergedItems.push(item);
-              } else {
-                const existingItem = mergedItems[existingIndex];
-                if (
-                  !Number.isFinite(existingItem.pubDateMs) &&
-                  Number.isFinite(item.pubDateMs)
-                ) {
-                  mergedItems[existingIndex] = item;
-                }
-              }
-
-              if (mergedItems.length >= MAX_FETCH_ITEMS) {
-                break;
+            const existingIndex = itemIndexByLink.get(item.link);
+            if (existingIndex === undefined) {
+              itemIndexByLink.set(item.link, mergedItems.length);
+              mergedItems.push(item);
+            } else {
+              const existingItem = mergedItems[existingIndex];
+              if (
+                !Number.isFinite(existingItem.pubDateMs) &&
+                Number.isFinite(item.pubDateMs)
+              ) {
+                mergedItems[existingIndex] = item;
               }
             }
 
             if (mergedItems.length >= MAX_FETCH_ITEMS) {
-              break;
+              return mergedItems;
             }
-          } catch (error) {
-            lastError = error;
           }
         }
 
+        return mergedItems;
+      };
+
+      const fetchFeedItems = async () => {
+        const endpointPromises = FEED_ENDPOINTS.map((endpoint) =>
+          fetchEndpointItems(endpoint)
+            .then((items) => ({
+              endpoint: endpoint.url,
+              items,
+            }))
+            .catch((error) => {
+              const reason = error && error.message ? error.message : "Unknown error";
+              throw new Error(endpoint.url + " (" + reason + ")");
+            })
+        );
+        const successfulResults = [];
+
+        endpointPromises.forEach((promise) => {
+          promise
+            .then((result) => {
+              successfulResults.push(result);
+            })
+            .catch(() => {});
+        });
+
+        const firstResult = await firstSuccessful(endpointPromises);
+
+        if (firstResult.items.length < MIN_ITEMS_BEFORE_ENRICH) {
+          await wait(getEnrichWaitMs(firstResult.items.length));
+        }
+
+        const candidateLists = [firstResult.items];
+        for (const result of successfulResults) {
+          if (candidateLists.length >= MAX_MERGED_ENDPOINT_RESULTS) {
+            break;
+          }
+
+          if (result.items !== firstResult.items) {
+            candidateLists.push(result.items);
+          }
+        }
+
+        const mergedItems = mergeNewsItemLists(candidateLists);
         if (mergedItems.length > 0) {
           return mergedItems;
         }
 
-        throw lastError || new Error("Unable to load feed");
+        return firstResult.items;
       };
 
       const renderNews = (items, options = {}) => {
         newsContainer.textContent = "";
         const emptyTitle =
-          options.emptyTitle || "No finance articles found from the last 7 days.";
+          options.emptyTitle ||
+          "No finance articles found from the last " +
+            RECENT_ARTICLE_WINDOW_DAYS +
+            " days.";
         const emptyMeta = options.emptyMeta || "Try Refresh News in a few minutes.";
 
         if (!items.length) {
@@ -535,6 +659,13 @@
       };
 
       const refreshNews = async () => {
+        if (isRefreshingNews) {
+          return;
+        }
+
+        isRefreshingNews = true;
+        refreshNewsButton.textContent = "Refreshing...";
+        refreshNewsButton.setAttribute("aria-disabled", "true");
         errorMessage.hidden = true;
         renderLoadingCards();
         newsSearchStatus.textContent = "Loading headlines to search...";
@@ -555,6 +686,10 @@
             "Unable to load the Google RSS feed right now (" + message + ")." + localHint;
           errorMessage.hidden = false;
           updateNewsSearchStatus(0, 0, newsKeywordInput.value);
+        } finally {
+          isRefreshingNews = false;
+          refreshNewsButton.textContent = REFRESH_LABEL;
+          refreshNewsButton.removeAttribute("aria-disabled");
         }
       };
 
