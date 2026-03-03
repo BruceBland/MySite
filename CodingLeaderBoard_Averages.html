@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Coding Model Leaderboard Averages</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --ink: #1f2328;
+      --muted: #57606a;
+      --line: #d0d7de;
+      --accent: #0a66c2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", Tahoma, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 20px 40px;
+    }
+    .header {
+      background: radial-gradient(circle at 0% 0%, #d8e9ff, #ffffff 55%);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      letter-spacing: 0.2px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.72rem 1.2rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform 140ms ease, box-shadow 140ms ease;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      color: #0f172a;
+      border-color: rgba(15, 23, 42, 0.16);
+      background: rgba(255, 255, 255, 0.8);
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 14px 0 18px;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .stat .k {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .stat .v {
+      font-size: 24px;
+      margin-top: 6px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    th {
+      background: #f6f8fa;
+      font-weight: 600;
+    }
+    .perfect-score-row td {
+      background: #e6f6e6;
+    }
+    .slow-response-row td {
+      background: #fdecec;
+    }
+    td:first-child, th:first-child {
+      width: 64px;
+      text-align: center;
+    }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    .chart {
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+    }
+    .qnotes {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .qitem {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px 14px;
+      background: #fbfcfe;
+    }
+    .qitem h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+    .qitem p {
+      margin: 6px 0;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+    .qitem details {
+      margin-top: 8px;
+    }
+    .qitem summary {
+      cursor: pointer;
+      color: var(--accent);
+      font-size: 13px;
+    }
+    .qitem pre {
+      margin: 8px 0 0;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      white-space: pre-wrap;
+      font-size: 12px;
+      line-height: 1.4;
+      overflow-x: auto;
+    }
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="header">
+      <div class="header-top">
+        <h1>Coding Model Leaderboard Averages</h1>
+        <a class="btn btn-secondary" href="index.html">Bruce Bland Home</a>
+      </div>
+      <p class="meta">Source: /Users/brucebland/Documents/JAVA/LLM_Server/Python_client_test_coding/CodingLeaderBoard.md</p>
+      <p class="meta">Generated: 2026-03-02 10:48:28</p>
+    </section>
+
+    <section class="grid">
+      <div class="stat">
+        <div class="k">Runs Parsed</div>
+        <div class="v">54</div>
+      </div>
+      <div class="stat">
+        <div class="k">Models</div>
+        <div class="v">10</div>
+      </div>
+      <div class="stat">
+        <div class="k">Ranking Rule</div>
+        <div class="v" style="font-size:15px; color:#1f2328;">Score desc, Time asc</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Average Leaderboard</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Model</th>
+              <th>Runs</th>
+              <th>Avg Passed</th>
+              <th>Avg Failed</th>
+              <th>Avg Score (%)</th>
+              <th>Avg Time Taken (s)</th>
+              <th>Avg Time / Response (s)</th>
+              <th>Avg Code Lines</th>
+              <th>Avg Code Eval (ms)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="perfect-score-row"><td>1</td><td>gpt-5-chat-latest</td><td>5</td><td>5.00</td><td>0.00</td><td>100.00</td><td>9.87</td><td>1.97</td><td>124.80</td><td>2.45</td></tr><tr class="perfect-score-row"><td>2</td><td>gpt-5.3-codex</td><td>5</td><td>5.00</td><td>0.00</td><td>100.00</td><td>21.19</td><td>4.24</td><td>164.40</td><td>2.46</td></tr><tr class="perfect-score-row"><td>3</td><td>gpt-5.2-chat-latest</td><td>6</td><td>5.00</td><td>0.00</td><td>100.00</td><td>21.78</td><td>4.36</td><td>137.33</td><td>2.31</td></tr><tr><td>4</td><td>gpt-4o</td><td>6</td><td>4.83</td><td>0.17</td><td>96.67</td><td>14.63</td><td>2.93</td><td>81.67</td><td>2.15</td></tr><tr class="slow-response-row"><td>5</td><td>gpt-5.2-codex</td><td>6</td><td>4.83</td><td>0.17</td><td>96.67</td><td>39.39</td><td>7.88</td><td>149.00</td><td>2.32</td></tr><tr><td>6</td><td>gpt-4.1</td><td>6</td><td>4.33</td><td>0.67</td><td>86.67</td><td>18.93</td><td>3.79</td><td>163.50</td><td>2.37</td></tr><tr class="slow-response-row"><td>7</td><td>gpt-5.1-codex-max</td><td>6</td><td>4.33</td><td>0.67</td><td>86.67</td><td>57.54</td><td>11.51</td><td>110.83</td><td>2.61</td></tr><tr class="slow-response-row"><td>8</td><td>essentialai/rnj-1</td><td>2</td><td>4.00</td><td>1.00</td><td>80.00</td><td>68.31</td><td>13.66</td><td>95.00</td><td>6.57</td></tr><tr class="slow-response-row"><td>9</td><td>gpt-5-mini</td><td>6</td><td>3.67</td><td>1.33</td><td>73.33</td><td>72.14</td><td>14.43</td><td>126.83</td><td>2.64</td></tr><tr class="slow-response-row"><td>10</td><td>gpt-5-nano</td><td>6</td><td>3.50</td><td>1.50</td><td>70.00</td><td>63.44</td><td>12.69</td><td>95.67</td><td>1.87</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Averages are computed across all parsed coding runs. Rows in light red have Avg Time / Response greater than 5.00s.</p>
+    </section>
+
+    <section class="card">
+      <h2>Chart: Average Score by Model</h2>
+      <svg class="chart" width="980" height="358" viewBox="0 0 980 358" role="img" aria-label="Average score chart">
+<line x1="230" y1="10" x2="790" y2="10" stroke="#d0d7de" />
+<line x1="790" y1="10" x2="790" y2="350" stroke="#d0d7de" />
+<text x="230" y="8" font-size="11" fill="#57606a">0%</text>
+<text x="766" y="8" font-size="11" fill="#57606a">100%</text>
+<text x="222" y="37" text-anchor="end" font-size="12" fill="#24292f">gpt-5-chat-latest</text>
+<rect x="230" y="22" width="560" height="22" fill="#f6f8fa" rx="4" ry="4" />
+<rect x="230" y="22" width="560" height="22" fill="#1f7a1f" rx="4" ry="4" />
+<text x="802" y="37" font-size="12" fill="#24292f">100.00% • 9.87s • 124.8 LOC</text>
+<text x="222" y="69" text-anchor="end" font-size="12" fill="#24292f">gpt-5.3-codex</text>
+<rect x="230" y="54" width="560" height="22" fill="#f6f8fa" rx="4" ry="4" />
+<rect x="230" y="54" width="560" height="22" fill="#1f7a1f" rx="4" ry="4" />
+<text x="802" y="69" font-size="12" fill="#24292f">100.00% • 21.19s • 164.4 LOC</text>
+<text x="222" y="101" text-anchor="end" font-size="12" fill="#24292f">gpt-5.2-chat-latest</text>
+<rect x="230" y="86" width="560" height="22" fill="#f6f8fa" rx="4" ry="4" />
+<rect x="230" y="86" width="560" height="22" fill="#1f7a1f" rx="4" ry="4" />
+<text x="802" y="101" font-size="12" fill="#24292f">100.00% • 21.78s • 137.3 LOC</text>
+<text x="222" y="133" text-anchor="end" font-size="12" fill="#24292f">gpt-4o</text>
+<rect x="230" y="118" width="560" height="22" fill="#f6f8fa" rx="4" ry="4" />
+<rect x="230" y="118" width="541" height="22" fill="#1f7a1f" rx="4" ry="4" />
+<text x="802" y="133" font-size="12" fill="#24292f">96.67% • 14.63s • 81.7 LOC</text>
+<text x="222" y="165" text-anchor="end" font-size="12" fill="#24292f">gpt-5.2-codex</text>
+<rect x="230" y="150" width="560" height="22" fill="#f6f8fa" rx="4" ry="4" />
+<rect x="230" y="150" width="541" height="22" fill="#1f7a1f" rx="4" ry="4" />
+<text x="802" y="165" font-size="12" fill="#24292f">96.67% • 39.39s • 149.0 LOC</text>
+<text x="222" y="197" text-anchor="end" font-size="12" fill="#24292f">gpt-4.1</text>
+<rect x="230" y="182" width="560" height="22" fill="#f6f8fa" rx="4" ry="4" />
+<rect x="230" y="182" width="485" height="22" fill="#2c5aa0" rx="4" ry="4" />
+<text x="802" y="197" font-size="12" fill="#24292f">86.67% • 18.93s • 163.5 LOC</text>
+<text x="222" y="229" text-anchor="end" font-size="12" fill="#24292f">gpt-5.1-codex-max</text>
+<rect x="230" y="214" width="560" height="22" fill="#f6f8fa" rx="4" ry="4" />
+<rect x="230" y="214" width="485" height="22" fill="#2c5aa0" rx="4" ry="4" />
+<text x="802" y="229" font-size="12" fill="#24292f">86.67% • 57.54s • 110.8 LOC</text>
+<text x="222" y="261" text-anchor="end" font-size="12" fill="#24292f">essentialai/rnj-1</text>
+<rect x="230" y="246" width="560" height="22" fill="#f6f8fa" rx="4" ry="4" />
+<rect x="230" y="246" width="448" height="22" fill="#9a6a12" rx="4" ry="4" />
+<text x="802" y="261" font-size="12" fill="#24292f">80.00% • 68.31s • 95.0 LOC</text>
+<text x="222" y="293" text-anchor="end" font-size="12" fill="#24292f">gpt-5-mini</text>
+<rect x="230" y="278" width="560" height="22" fill="#f6f8fa" rx="4" ry="4" />
+<rect x="230" y="278" width="410" height="22" fill="#9a6a12" rx="4" ry="4" />
+<text x="802" y="293" font-size="12" fill="#24292f">73.33% • 72.14s • 126.8 LOC</text>
+<text x="222" y="325" text-anchor="end" font-size="12" fill="#24292f">gpt-5-nano</text>
+<rect x="230" y="310" width="560" height="22" fill="#f6f8fa" rx="4" ry="4" />
+<rect x="230" y="310" width="392" height="22" fill="#9a6a12" rx="4" ry="4" />
+<text x="802" y="325" font-size="12" fill="#24292f">70.00% • 63.44s • 95.7 LOC</text>
+</svg>
+      <p class="note">Bar length shows average score (%). Labels also show average run time and average generated code size.</p>
+    </section>
+
+    <section class="card">
+      <h2>Notes: Coding Questions</h2>
+      <div class="qnotes">
+<div class="qitem">
+<h3>Q1: sum_any_numbers</h3>
+<p><strong>Description:</strong> Write a variadic sum function for any count of numeric arguments. (name=sum_any_numbers, entrypoint=sum_numbers())</p>
+<p><strong>Why It Is Hard:</strong> Variadic function design (`*nums`) plus edge-case handling (empty input should return 0), while keeping the implementation minimal and correct for negative values.</p>
+<details><summary>Prompt Text</summary><pre>Write a Python function `sum_numbers(*nums)` that computes and returns the sum of any given number of numeric arguments. Return only code.</pre></details>
+</div>
+<div class="qitem">
+<h3>Q2: primes_below_50</h3>
+<p><strong>Description:</strong> Return all prime numbers less than `n` (with `n &lt; 50`). (name=primes_below_50, entrypoint=primes_below())</p>
+<p><strong>Why It Is Hard:</strong> Requires correct prime detection, loop bounds, and exclusion of non-primes/values below 2, with results returned in ascending order.</p>
+<details><summary>Prompt Text</summary><pre>Write a Python function `primes_below(n)` that returns a list of all prime numbers less than `n` in ascending order. Assume `n` is an integer and `n &lt; 50`. Return only code.</pre></details>
+</div>
+<div class="qitem">
+<h3>Q3: evaluate_arithmetic_expression</h3>
+<p><strong>Description:</strong> Evaluate arithmetic expressions with precedence, parentheses, and unary minus. (name=evaluate_arithmetic_expression, entrypoint=evaluate_expression())</p>
+<p><strong>Why It Is Hard:</strong> This is a parser problem: tokenization, precedence, parentheses, unary minus handling, and division truncation toward zero (which differs from Python floor division for negatives).</p>
+<details><summary>Prompt Text</summary><pre>Write a Python function `evaluate_expression(expr)` that evaluates an arithmetic expression string and returns an integer result. Support integers, spaces, parentheses, and operators `+`, `-`, `*`, `/` with standard precedence. Division must truncate toward zero (not floor). Support unary minus (for example: `-3`, `2-(-5)`). Do not use `eval`, `exec`, or `ast`. Return only code.</pre></details>
+</div>
+<div class="qitem">
+<h3>Q4: black_scholes_option_price</h3>
+<p><strong>Description:</strong> Compute European Black-Scholes option prices (call/put, with dividend yield). (name=black_scholes_option_price, entrypoint=black_scholes_price())</p>
+<p><strong>Why It Is Hard:</strong> Combines quantitative finance math (Black-Scholes), numerical functions (`log`, `exp`, `sqrt`, `erf`), call/put branching, and continuous dividend yield support with floating-point accuracy constraints.</p>
+<details><summary>Prompt Text</summary><pre>Write a Python function `black_scholes_price(option_type, spot_price, strike_price, time_to_expiry_years, risk_free_rate, volatility, dividend_yield=0.0)` that returns the Black-Scholes price for a European option. `option_type` will be either `&quot;call&quot;` or `&quot;put&quot;`. Use standard Black-Scholes assumptions and support continuous dividend yield via `dividend_yield`. Use only the Python standard library (for example `math.log`, `math.exp`, `math.sqrt`, `math.erf`) and do not use external libraries. Return only code.</pre></details>
+</div>
+<div class="qitem">
+<h3>Q5: historical_var_percentile_from_prices</h3>
+<p><strong>Description:</strong> Compute 1-day historical portfolio VaR from a small price matrix for a supplied confidence level (for example 95%) using nearest-rank logic. (name=historical_var_percentile_from_prices, entrypoint=historical_var_from_prices())</p>
+<p><strong>Why It Is Hard:</strong> Combines risk business logic (position-weighted portfolio P&amp;L), return math from historical prices, and statistical tail estimation via percentile-based historical VaR using a specified nearest-rank quantile rule.</p>
+<details><summary>Prompt Text</summary><pre>Write a Python function `historical_var_from_prices(closing_prices_matrix, positions_shares, confidence_level)` that returns the 1-day portfolio historical VaR as a positive float for a requested confidence level (for example `0.95` for 95% VaR). `closing_prices_matrix` is a list of rows of closing prices ordered oldest to newest with shape `[n_days][n_stocks]` where `n_days &lt; 10` and `n_stocks &lt; 10`. `positions_shares` is a list of current share positions in the same stock order as the columns. Use simple returns `r = p_t / p_{t-1} - 1`, use the latest price row as current prices, compute scenario P&amp;L for each return row as `sum(position_i * latest_price_i * return_i)`, sort scenario P&amp;Ls ascending, use nearest-rank on the loss tail with `k = ceil((1 - confidence_level) * n) - 1`, clamp `k` into valid range, and return `max(0.0, -sorted_pnls[k])`. Use only the Python standard library. Return only code.</pre></details>
+</div>
+</div>
+      <p class="note">These are the coding tasks used by `run_leaderboard_models.py` when evaluating models in this coding benchmark.</p>
+    </section>
+  </div>
+</body>
+</html>

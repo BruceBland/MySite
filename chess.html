@@ -1,4 +1,17 @@
 <!doctype html>
+<!--
+  Game: Chess (Two Player)
+  Purpose: Browser-based two-player chess with legal move validation, check/
+  checkmate handling, and leaderboard-style score/Elo tracking.
+  How to play: Click or tap a piece, then click a highlighted legal destination
+  square. Use New Game to reset a match and side-panel actions to manage board
+  and leaderboard state.
+  File structure:
+  1) Head: metadata, fonts, and board/panel styles.
+  2) Body: chessboard container, status/controls, and leaderboard panel.
+  3) Script: board model, legal move generation, check/checkmate evaluation,
+     UI rendering/events, and local leaderboard persistence.
+-->
 <html lang="en">
 <head>
   <meta charset="utf-8" />

@@ -1,4 +1,16 @@
 <!doctype html>
+<!--
+  Game: Tetris
+  Purpose: Classic falling-block puzzle with next-piece preview and leaderboard.
+  How to play: Arrow Left/Right move, Arrow Up rotates, Arrow Down soft-drops,
+  Space starts and hard-drops, P pauses/resumes, and Enter restarts after game
+  over.
+  File structure:
+  1) Head: metadata, fonts, and board/sidebar/leaderboard styling.
+  2) Body: main game canvas, next-piece panel, controls, and score leaderboard.
+  3) Script: tetromino generation, collision/line-clear logic, scoring/levels,
+     input handling, animation loop, and local leaderboard storage.
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">

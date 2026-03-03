@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Intraday price moves for major global indices using Yahoo Finance chart data."
+    />
+    <title>Intraday Indices | Yahoo Finance Market Moves</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260219-1" />
+    <style>
+      .chart-wrap {
+        padding: 1rem;
+        margin-top: 1rem;
+      }
+
+      .chart-canvas {
+        width: 100%;
+        height: 440px;
+      }
+
+      .moves-grid {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+
+      .move-card .eyebrow {
+        margin-bottom: 0.3rem;
+      }
+
+      .move-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .move-value.up {
+        color: #15803d;
+      }
+
+      .move-value.down {
+        color: #b91c1c;
+      }
+
+      .meta-row {
+        margin-top: 0.35rem;
+      }
+
+      .status-line {
+        margin-top: 0.9rem;
+      }
+
+      @media (max-width: 960px) {
+        .moves-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .chart-canvas {
+          height: 340px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <nav class="nav container">
+        <a class="brand" href="index.html">Bruce Bland</a>
+        <div class="nav-links">
+          <a href="index.html#about">About</a>
+          <a href="index.html#highlights">Highlights</a>
+          <a href="AI_Newspaper1.html">AI Newspaper</a>
+          <a href="Finance_Newspaper.html">Finance Newspaper</a>
+          <a href="games.html">Games</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero container reveal">
+        <p class="eyebrow">Markets - Intraday - Yahoo Finance</p>
+        <h1>Current Intraday Moves: 5 Major Indices</h1>
+        <div class="hero-actions">
+          <a class="btn btn-secondary" id="refreshData" href="#">Refresh Data</a>
+          <a
+            class="btn btn-primary"
+            href="https://finance.yahoo.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Open Yahoo Finance</a
+          >
+        </div>
+        <p class="muted status-line" id="statusLine">Loading intraday data...</p>
+      </section>
+
+      <section class="section container reveal">
+        <div class="section-head">
+          <h2>Intraday Candlestick Chart (% From Open)</h2>
+        </div>
+        <div id="movesGrid" class="moves-grid"></div>
+
+        <article class="card chart-wrap">
+          <canvas id="indicesChart" class="chart-canvas" aria-label="Intraday index vertical candlestick chart in percent terms"></canvas>
+        </article>
+      </section>
+    </main>
+
+    <script src="script.js?v=20260219-1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+      const INDEXES = [
+        {
+          name: "S&P 500",
+          symbols: ["^GSPC", "^SPX"],
+          color: "#1066ff",
+        },
+        {
+          name: "Nasdaq 100",
+          symbols: ["^NDX", "^NDQ"],
+          color: "#00a6a6",
+        },
+        {
+          name: "Dow Jones",
+          symbols: ["^DJI", "^DJIA"],
+          color: "#7c3aed",
+        },
+        {
+          name: "FTSE 100",
+          symbols: ["^FTSE", "^UKX"],
+          color: "#ea580c",
+        },
+        {
+          name: "Nikkei 225",
+          symbols: ["^N225", "^NKY"],
+          color: "#16a34a",
+        },
+      ];
+
+      const refreshButton = document.getElementById("refreshData");
+      const statusLine = document.getElementById("statusLine");
+      const movesGrid = document.getElementById("movesGrid");
+      const chartCanvas = document.getElementById("indicesChart");
+
+      let chartInstance = null;
+      let wickPluginRegistered = false;
+
+      const setStatus = (text) => {
+        statusLine.textContent = text;
+      };
+
+      const formatSignedPct = (value) => {
+        const num = Number(value);
+        if (!Number.isFinite(num)) {
+          return "";
+        }
+        const sign = num >= 0 ? "+" : "";
+        return sign + num.toFixed(2) + "%";
+      };
+
+      const endpointCandidates = (symbol) => {
+        const encoded = encodeURIComponent(String(symbol || "").trim());
+        const yahooTargets = [
+          "https://query1.finance.yahoo.com/v8/finance/chart/" + encoded + "?range=5d&interval=1d&includePrePost=false",
+          "https://query2.finance.yahoo.com/v8/finance/chart/" + encoded + "?range=5d&interval=1d&includePrePost=false",
+          "https://query1.finance.yahoo.com/v8/finance/chart/" + encoded + "?range=1d&interval=1m&includePrePost=false",
+          "https://query2.finance.yahoo.com/v8/finance/chart/" + encoded + "?range=1d&interval=1m&includePrePost=false",
+        ];
+
+        const endpoints = [];
+        for (const target of yahooTargets) {
+          endpoints.push("https://r.jina.ai/http://" + target.replace(/^https?:\/\//, ""));
+          endpoints.push("https://api.allorigins.win/get?url=" + encodeURIComponent(target));
+          endpoints.push("https://api.allorigins.win/raw?url=" + encodeURIComponent(target));
+          endpoints.push(target);
+        }
+
+        return endpoints;
+      };
+
+      const fetchPayload = async (url) => {
+        const cacheBust = (url.includes("?") ? "&" : "?") + "_=" + Date.now();
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
+
+        try {
+          const response = await fetch(url + cacheBust, {
+            method: "GET",
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+          }
+
+          const payload = await response.text();
+          if (url.includes("api.allorigins.win/get?")) {
+            try {
+              const wrapped = JSON.parse(payload);
+              if (wrapped && typeof wrapped.contents === "string") {
+                return wrapped.contents;
+              }
+            } catch (error) {
+              return payload;
+            }
+          }
+
+          return payload;
+        } finally {
+          clearTimeout(timeout);
+        }
+      };
+
+      const parsePayloadJson = (payloadText) => {
+        const text = String(payloadText || "").trim();
+        if (!text) {
+          return null;
+        }
+
+        const chartStart = text.indexOf('{"chart":');
+        const firstBrace = chartStart >= 0 ? chartStart : text.indexOf("{");
+        if (firstBrace < 0) {
+          return null;
+        }
+
+        let depth = 0;
+        let inString = false;
+        let escaped = false;
+        let endBrace = -1;
+
+        for (let idx = firstBrace; idx < text.length; idx += 1) {
+          const ch = text[idx];
+          if (inString) {
+            if (escaped) {
+              escaped = false;
+            } else if (ch === "\\") {
+              escaped = true;
+            } else if (ch === "\"") {
+              inString = false;
+            }
+            continue;
+          }
+
+          if (ch === "\"") {
+            inString = true;
+            continue;
+          }
+
+          if (ch === "{") {
+            depth += 1;
+          } else if (ch === "}") {
+            depth -= 1;
+            if (depth === 0) {
+              endBrace = idx;
+              break;
+            }
+          }
+        }
+
+        if (endBrace <= firstBrace) {
+          return null;
+        }
+
+        try {
+          return JSON.parse(text.slice(firstBrace, endBrace + 1));
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const firstFinite = (values) => {
+        for (const value of Array.isArray(values) ? values : []) {
+          const num = Number(value);
+          if (Number.isFinite(num)) {
+            return num;
+          }
+        }
+        return null;
+      };
+
+      const lastFinite = (values) => {
+        if (!Array.isArray(values)) {
+          return null;
+        }
+
+        for (let idx = values.length - 1; idx >= 0; idx -= 1) {
+          const num = Number(values[idx]);
+          if (Number.isFinite(num)) {
+            return num;
+          }
+        }
+        return null;
+      };
+
+      const finiteValues = (values) => {
+        const nums = [];
+        for (const value of Array.isArray(values) ? values : []) {
+          const num = Number(value);
+          if (Number.isFinite(num)) {
+            nums.push(num);
+          }
+        }
+        return nums;
+      };
+
+      const formatAsOf = (epochSeconds, timezoneName) => {
+        if (!Number.isFinite(epochSeconds)) {
+          return "";
+        }
+
+        const date = new Date(epochSeconds * 1000);
+        const baseOptions = {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        };
+
+        if (timezoneName) {
+          try {
+            return date.toLocaleString([], { ...baseOptions, timeZone: timezoneName });
+          } catch (error) {
+            return date.toLocaleString([], baseOptions);
+          }
+        }
+
+        return date.toLocaleString([], baseOptions);
+      };
+
+      const parseYahooChartPayload = (payloadText) => {
+        const parsed = parsePayloadJson(payloadText);
+        const result =
+          parsed &&
+          parsed.chart &&
+          Array.isArray(parsed.chart.result) &&
+          parsed.chart.result.length > 0
+            ? parsed.chart.result[0]
+            : null;
+        if (!result || !result.indicators || !Array.isArray(result.indicators.quote)) {
+          return null;
+        }
+
+        const meta = result.meta || {};
+        const quote = result.indicators.quote[0] || {};
+        const granularity = String(meta.dataGranularity || "").toLowerCase();
+
+        let open = null;
+        let high = null;
+        let low = null;
+        let close = null;
+
+        if (granularity === "1d") {
+          open = lastFinite(quote.open);
+          high = lastFinite(quote.high);
+          low = lastFinite(quote.low);
+          close = lastFinite(quote.close);
+        } else {
+          open = firstFinite(quote.open);
+          const highs = finiteValues(quote.high);
+          const lows = finiteValues(quote.low);
+          close = lastFinite(quote.close);
+          high = highs.length > 0 ? Math.max(...highs) : null;
+          low = lows.length > 0 ? Math.min(...lows) : null;
+        }
+
+        const metaOpen = Number(meta.regularMarketOpen);
+        const metaDayHigh = Number(meta.regularMarketDayHigh);
+        const metaDayLow = Number(meta.regularMarketDayLow);
+        if (Number.isFinite(metaOpen) && metaOpen > 0) {
+          open = metaOpen;
+        }
+        if (Number.isFinite(metaDayHigh) && metaDayHigh > 0) {
+          high = metaDayHigh;
+        }
+        if (Number.isFinite(metaDayLow) && metaDayLow > 0) {
+          low = metaDayLow;
+        }
+
+        const last = Number.isFinite(Number(meta.regularMarketPrice))
+          ? Number(meta.regularMarketPrice)
+          : null;
+        const timestampFallback = lastFinite(result.timestamp);
+        const asOfEpoch = Number.isFinite(Number(meta.regularMarketTime))
+          ? Number(meta.regularMarketTime)
+          : timestampFallback;
+
+        if (
+          !Number.isFinite(open) ||
+          !Number.isFinite(high) ||
+          !Number.isFinite(low) ||
+          !Number.isFinite(close) ||
+          open <= 0 ||
+          high <= 0 ||
+          low <= 0 ||
+          close <= 0
+        ) {
+          return null;
+        }
+
+        return {
+          symbol: String(meta.symbol || "").trim(),
+          open,
+          high,
+          low,
+          close,
+          last,
+          asOfEpoch,
+          timezone: String(meta.exchangeTimezoneName || "").trim(),
+        };
+      };
+
+      const parseYahooErrorFromPayload = (payloadText) => {
+        const parsed = parsePayloadJson(payloadText);
+        if (!parsed || typeof parsed !== "object") {
+          return null;
+        }
+
+        const chartErr =
+          parsed.chart && parsed.chart.error && typeof parsed.chart.error === "object"
+            ? parsed.chart.error
+            : null;
+        if (chartErr) {
+          const code = chartErr.code ? String(chartErr.code) : "";
+          const desc = chartErr.description ? String(chartErr.description) : "";
+          const joined = [code, desc].filter((x) => x).join(": ");
+          if (joined) {
+            return joined;
+          }
+        }
+
+        const financeErr =
+          parsed.finance && parsed.finance.error && typeof parsed.finance.error === "object"
+            ? parsed.finance.error
+            : null;
+        if (financeErr) {
+          const code = financeErr.code ? String(financeErr.code) : "";
+          const desc = financeErr.description ? String(financeErr.description) : "";
+          const joined = [code, desc].filter((x) => x).join(": ");
+          if (joined) {
+            return joined;
+          }
+        }
+
+        return null;
+      };
+
+      const endpointLabel = (endpoint) => {
+        if (endpoint.includes("r.jina.ai")) {
+          return "r.jina.ai";
+        }
+        if (endpoint.includes("allorigins.win/get?")) {
+          return "allorigins-get";
+        }
+        if (endpoint.includes("allorigins.win/raw?")) {
+          return "allorigins-raw";
+        }
+
+        try {
+          return new URL(endpoint).hostname;
+        } catch (error) {
+          return endpoint;
+        }
+      };
+
+      const loadIndexSeries = async (indexDef) => {
+        const failureReasons = [];
+        const addFailure = (message) => {
+          const msg = String(message || "").trim();
+          if (!msg || failureReasons.includes(msg)) {
+            return;
+          }
+          if (failureReasons.length < 8) {
+            failureReasons.push(msg);
+          }
+        };
+
+        for (const symbol of indexDef.symbols) {
+          const endpoints = endpointCandidates(symbol);
+
+          for (const endpoint of endpoints) {
+            const source = endpointLabel(endpoint);
+            try {
+              const payloadText = await fetchPayload(endpoint);
+              if (!payloadText || payloadText.length < 20) {
+                addFailure(symbol + "@" + source + " empty payload");
+                continue;
+              }
+
+              const quote = parseYahooChartPayload(payloadText);
+              if (!quote || !Number.isFinite(quote.open) || quote.open === 0) {
+                const providerError = parseYahooErrorFromPayload(payloadText);
+                if (providerError) {
+                  addFailure(symbol + "@" + source + " " + providerError);
+                } else {
+                  addFailure(symbol + "@" + source + " unparseable payload");
+                }
+                continue;
+              }
+
+              const closeMovePct = ((quote.close / quote.open) - 1) * 100;
+              const lastMovePct =
+                Number.isFinite(quote.last) && quote.last !== 0
+                  ? ((quote.last / quote.open) - 1) * 100
+                  : null;
+
+              return {
+                name: indexDef.name,
+                color: indexDef.color,
+                symbol: quote.symbol || symbol,
+                ohlc: {
+                  open: quote.open,
+                  high: quote.high,
+                  low: quote.low,
+                  close: quote.close,
+                },
+                lastPrice: quote.last,
+                closeMovePct,
+                lastMovePct,
+                asOf: formatAsOf(quote.asOfEpoch, quote.timezone),
+              };
+            } catch (error) {
+              const msg = error && error.message ? error.message : String(error || "Unknown error");
+              addFailure(symbol + "@" + source + " " + msg);
+              continue;
+            }
+          }
+        }
+
+        const details = failureReasons.length > 0 ? " - " + failureReasons.join("; ") : "";
+        throw new Error("No usable data for " + indexDef.name + details);
+      };
+
+      const renderChart = (seriesList) => {
+        const candlePctSeries = seriesList.map((series) => {
+          const baseOpen = series.ohlc.open;
+          const toPct = (price) => ((price / baseOpen) - 1) * 100;
+
+          return {
+            ...series,
+            pct: {
+              open: 0,
+              high: toPct(series.ohlc.high),
+              low: toPct(series.ohlc.low),
+              close: toPct(series.ohlc.close),
+              last: Number.isFinite(series.lastPrice) && series.lastPrice !== 0 ? toPct(series.lastPrice) : null,
+            },
+          };
+        });
+
+        if (!wickPluginRegistered) {
+          Chart.register({
+            id: "candleWicks",
+            afterDatasetsDraw: (chart, _args, pluginOptions) => {
+              const series = pluginOptions && Array.isArray(pluginOptions.series) ? pluginOptions.series : [];
+              const datasetMeta = chart.getDatasetMeta(0);
+              if (!datasetMeta || !datasetMeta.data || datasetMeta.data.length === 0) {
+                return;
+              }
+
+              const yScale = chart.scales.y;
+              if (!yScale) {
+                return;
+              }
+
+              const ctx = chart.ctx;
+              ctx.save();
+
+              datasetMeta.data.forEach((barElement, idx) => {
+                const item = series[idx];
+                if (!item || !item.pct) {
+                  return;
+                }
+
+                const candleColor = item.closeMovePct >= 0 ? "#15803d" : "#b91c1c";
+                const x = barElement.x;
+                const highY = yScale.getPixelForValue(item.pct.high);
+                const lowY = yScale.getPixelForValue(item.pct.low);
+                const openY = yScale.getPixelForValue(item.pct.open);
+                const closeY = yScale.getPixelForValue(item.pct.close);
+                const bodyTopY = Math.min(openY, closeY);
+                const bodyBottomY = Math.max(openY, closeY);
+                const capWidth = Math.min((barElement.width || 12) * 0.45, 12);
+
+                ctx.strokeStyle = candleColor;
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                ctx.moveTo(x, highY);
+                ctx.lineTo(x, bodyTopY);
+                ctx.moveTo(x, bodyBottomY);
+                ctx.lineTo(x, lowY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x - capWidth / 2, highY);
+                ctx.lineTo(x + capWidth / 2, highY);
+                ctx.moveTo(x - capWidth / 2, lowY);
+                ctx.lineTo(x + capWidth / 2, lowY);
+                ctx.stroke();
+
+                if (Number.isFinite(item.pct.last)) {
+                  const lastY = yScale.getPixelForValue(item.pct.last);
+
+                  // Draw the latest (last trade) price as a dot on the candle.
+                  ctx.beginPath();
+                  ctx.fillStyle = candleColor;
+                  ctx.strokeStyle = "#ffffff";
+                  ctx.lineWidth = 1.25;
+                  ctx.arc(x, lastY, 3.8, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.stroke();
+                }
+              });
+
+              ctx.restore();
+            },
+          });
+          wickPluginRegistered = true;
+        }
+
+        const labels = candlePctSeries.map((series) => series.name);
+        const bodyData = candlePctSeries.map((series) => {
+          const start = Math.min(series.pct.open, series.pct.close);
+          const end = Math.max(series.pct.open, series.pct.close);
+          return [start, end];
+        });
+        const lows = candlePctSeries.map((series) => series.pct.low);
+        const highs = candlePctSeries.map((series) => series.pct.high);
+        const lasts = candlePctSeries
+          .map((series) => series.pct.last)
+          .filter((value) => Number.isFinite(value));
+        let yMin = lasts.length > 0 ? Math.min(...lows, ...lasts) : Math.min(...lows);
+        let yMax = lasts.length > 0 ? Math.max(...highs, ...lasts) : Math.max(...highs);
+        if (yMin === yMax) {
+          const pad = Math.max(Math.abs(yMin) * 0.01, 1);
+          yMin -= pad;
+          yMax += pad;
+        } else {
+          const pad = (yMax - yMin) * 0.08;
+          yMin -= pad;
+          yMax += pad;
+        }
+
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+
+        chartInstance = new Chart(chartCanvas, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Open to Close",
+                data: bodyData,
+                borderWidth: 1.5,
+                borderColor: (ctx) => {
+                  const item = seriesList[ctx.dataIndex];
+                  return item && item.closeMovePct >= 0 ? "#15803d" : "#b91c1c";
+                },
+                backgroundColor: (ctx) => {
+                  const item = seriesList[ctx.dataIndex];
+                  return item && item.closeMovePct >= 0
+                    ? "rgba(21,128,61,0.35)"
+                    : "rgba(185,28,28,0.35)";
+                },
+                barPercentage: 0.55,
+                categoryPercentage: 0.72,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "x",
+            interaction: {
+              mode: "nearest",
+              intersect: true,
+            },
+            plugins: {
+              legend: { display: false },
+              candleWicks: {
+                series: candlePctSeries,
+              },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => {
+                    const item = candlePctSeries[ctx.dataIndex];
+                    if (!item || !item.pct) {
+                      return "";
+                    }
+
+                    return (
+                      "O " +
+                      formatSignedPct(item.pct.open) +
+                      "  H " +
+                      formatSignedPct(item.pct.high) +
+                      "  L " +
+                      formatSignedPct(item.pct.low) +
+                      "  C " +
+                      formatSignedPct(item.pct.close) +
+                      "  | Px O " +
+                      item.ohlc.open.toFixed(2) +
+                      " H " +
+                      item.ohlc.high.toFixed(2) +
+                      " L " +
+                      item.ohlc.low.toFixed(2) +
+                      " C " +
+                      item.ohlc.close.toFixed(2) +
+                      "  Last " +
+                      (Number.isFinite(item.pct.last) ? formatSignedPct(item.pct.last) : "N/A") +
+                      "  CloseMv " +
+                      formatSignedPct(item.closeMovePct) +
+                      "  LastMv " +
+                      (Number.isFinite(item.lastMovePct) ? formatSignedPct(item.lastMovePct) : "N/A") +
+                      "  (" +
+                      (Number.isFinite(item.lastMovePct) ? "last" : "close only") +
+                      " basis)"
+                    );
+                  },
+                },
+              },
+            },
+            scales: {
+              y: {
+                min: yMin,
+                max: yMax,
+                ticks: {
+                  callback: (value) => {
+                    const v = Number(value);
+                    return Number.isFinite(v) ? formatSignedPct(v) : value;
+                  },
+                },
+              },
+            },
+          },
+        });
+      };
+
+      const renderMoveCards = (seriesList) => {
+        movesGrid.textContent = "";
+
+        for (const series of seriesList) {
+          const card = document.createElement("article");
+          card.className = "card move-card";
+
+          const name = document.createElement("p");
+          name.className = "eyebrow";
+          name.textContent = series.name;
+
+          const value = document.createElement("p");
+          const hasLastMove = Number.isFinite(series.lastMovePct);
+          value.className = "move-value " + (hasLastMove ? (series.lastMovePct >= 0 ? "up" : "down") : "");
+          if (hasLastMove) {
+            const sign = series.lastMovePct >= 0 ? "+" : "";
+            value.textContent = sign + series.lastMovePct.toFixed(2) + "%";
+          } else {
+            value.textContent = "N/A";
+          }
+
+          const meta = document.createElement("p");
+          meta.className = "muted meta-row";
+          const lastText = Number.isFinite(series.lastPrice) ? series.lastPrice.toFixed(2) : "N/A";
+          meta.textContent =
+            "Last: " +
+            lastText +
+            " - Close: " +
+            series.ohlc.close.toFixed(2) +
+            " - " +
+            series.symbol +
+            " - " +
+            series.asOf;
+
+          card.append(name, value, meta);
+          movesGrid.append(card);
+        }
+      };
+
+      const loadAll = async () => {
+        if (typeof Chart === "undefined") {
+          setStatus("Chart library failed to load. Please refresh.");
+          return;
+        }
+
+        setStatus("Loading intraday series from Yahoo Finance...");
+        movesGrid.textContent = "";
+
+        const loadJobs = INDEXES.map((idx) => loadIndexSeries(idx));
+        const results = await Promise.allSettled(loadJobs);
+
+        const good = [];
+        const failed = [];
+
+        for (const result of results) {
+          if (result.status === "fulfilled") {
+            good.push(result.value);
+          } else {
+            failed.push(result.reason ? String(result.reason.message || result.reason) : "Unknown error");
+          }
+        }
+
+        if (good.length === 0) {
+          const failSummary = failed.length > 0 ? failed.join("; ") : "unknown";
+          throw new Error("No intraday series available (" + failSummary + ").");
+        }
+
+        renderChart(good);
+        renderMoveCards(good);
+
+        const now = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        if (failed.length > 0) {
+          setStatus("Updated " + now + ". Loaded " + good.length + " of 5 indices.");
+        } else {
+          setStatus("Updated " + now + ". Loaded all 5 indices.");
+        }
+      };
+
+      const refresh = async () => {
+        try {
+          await loadAll();
+        } catch (error) {
+          const localHint =
+            window.location.protocol === "file:"
+              ? " Open this page via a local server URL (for example http://localhost) so cross-origin fetches are allowed."
+              : "";
+          setStatus(
+            "Unable to load data right now (" + (error.message || "Unknown error") + ")." + localHint
+          );
+        }
+      };
+
+      refreshButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        refresh();
+      });
+
+      refresh();
+    </script>
+  </body>
+</html>

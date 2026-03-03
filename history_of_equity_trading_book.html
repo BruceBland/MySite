@@ -142,6 +142,23 @@
       order: 1;
     }
 
+    .chapter__text h3 {
+      margin: 1rem 0 0.5rem;
+      line-height: 1.2;
+      font-size: 1.02rem;
+      color: var(--text);
+    }
+
+    .chapter__text ul {
+      margin: 0.35rem 0 0.95rem 1.1rem;
+      padding: 0;
+      color: var(--text-soft);
+    }
+
+    .chapter__text li {
+      margin: 0 0 0.45rem;
+    }
+
     .footer-note {
       margin: 0.3rem 0 0;
       text-align: center;
@@ -602,15 +619,27 @@
       <section id="chapter-20" class="chapter reveal chapter--reverse">
         <div class="chapter__text">
           <h2>Chapter 20: Technology’s Arc and Equity’s Future</h2>
-          <p>The long arc of equity trading is best understood as a sequence of infrastructure transitions. Over two centuries, markets moved from paper certificates and in‑person dealing to electronic books, standardized messaging, and globally connected execution. Each transition reduced frictions in one dimension while creating new dependencies in another. The purpose of equity markets remained stable, but the operating system changed repeatedly.</p>
-          <p>Post‑trade architecture illustrates this clearly. Dematerialization, central depositories, and netting frameworks replaced manual transfer processes that had constrained volume and increased counterparty risk. As settlement cycles compressed, less capital sat idle in operational pipelines, and market participants could recycle balance‑sheet capacity more efficiently. Reliability in clearing and settlement became a competitive input, not just a back‑office function.</p>
-          <p>Pre‑trade and execution layers changed just as profoundly. The market evolved from delayed quotation to continuous electronic dissemination, then from voice execution to algorithmic matching. Decimalization and order‑display reforms narrowed spreads and shifted competition toward queue position, routing logic, and data quality. Strategy moved from the trading floor into software configured by policy and code.</p>
-          <p>Fragmentation followed naturally. Once connectivity costs fell and rulebooks allowed competition, liquidity dispersed across specialized venues: lit exchanges, MTFs, SIs, ATSs, dark pools, and retail internalization channels. Smart order routers reassembled this dispersed liquidity in real time, optimizing among price, fee schedules, latency, and fill probability. The market ceased to be a place and became a network.</p>
-          <p>Investment wrappers and access channels changed demand as much as matching engines changed supply. ETFs turned diversified exposure into continuously tradable instruments, concentrating turnover in liquid wrappers while linking secondary trading to primary creation and redemption. Retail brokerage platforms made participation cheaper and faster, expanding the investor base but increasing dependence on execution quality, reference prices, and market‑data design.</p>
-          <p>Automation also introduced system risk in new forms. Events such as the Flash Crash, the Knight Capital incident, and major data‑feed outages showed that software defects, interaction effects, and infrastructure bottlenecks can propagate faster than discretionary controls. The regulatory response embedded resilience requirements into market design: pre‑trade checks, kill switches, circuit breakers, limit mechanisms, testing standards, and richer audit trails.</p>
-          <p>Economics shifted with the technology stack. Floor specialists and traditional jobbers gave way to electronic market makers, wholesalers, and platform operators. Exchanges increasingly monetized data, connectivity, and technology services alongside listings and transaction fees. For buy‑side firms, execution architecture and data governance became as important to outcomes as portfolio construction itself.</p>
-          <p>Geography did not disappear, but its role changed. Co‑location, microwave routes, and direct feeds made physical path length and protocol design sources of measurable edge, while Stock Connect‑type links widened cross‑border participation. At the same time, legal regimes, currency controls, and supervisory models preserved local distinctions. Global interoperability therefore depends on coordination among institutions that remain nationally grounded.</p>
-          <p>The next phase will likely be shaped by three interacting forces. First, AI and advanced analytics will move further into execution, surveillance, and decision support, raising accountability questions when models fail. Second, post‑trade reform will continue compressing risk through shorter settlement and more automated exception handling. Third, venue design will keep balancing fairness, transparency, and efficiency through auctions, speed controls, and disclosure reforms. Equity markets have always adapted through this cycle of innovation, regulation, and behavioral response, and that cycle remains the core pattern going forward.</p>
+          <p>The long arc of equity trading is best understood as a series of cost reductions that change behavior. Faster communication, cheaper execution, better routing, and broader access each improved efficiency. But each improvement also increased activity, complexity, and dependence on infrastructure.</p>
+          <p>That pattern makes the forecast more specific. The next phase is unlikely to be a simple story of AI replacing human judgment. It is more likely to be a repricing of decision costs across the stack: research, execution design, surveillance, compliance triage, post-trade exception handling, and client workflow.</p>
+
+          <h3>A More Focused Forecast</h3>
+          <p>AI will probably matter first where it can be embedded into controlled workflows rather than where it is asked to act without supervision. The most immediate gains are likely to come from decision support inside existing market plumbing, not from fully autonomous trading systems.</p>
+          <p>In practice, that means more adaptive execution policies, faster exception handling, better surveillance triage, and richer monitoring of routing outcomes. It also means more pressure to improve data quality, governance, and auditability, because weak inputs and unclear controls become more costly when decisions scale faster.</p>
+          <p>At the same time, competition among venues and intermediaries is likely to become more model-driven. Routing logic, fill-probability estimation, and venue-specific behavior tuning will continue to evolve. As this happens, transparency debates will shift from “where was the order sent?” toward “how was the routing policy determined, updated, and controlled?”</p>
+
+          <h3>Jevons Paradox and AI in Finance</h3>
+          <p>Jevons paradox is the tendency for efficiency gains to increase total usage rather than reduce it. In finance, efficiency improvements have often expanded the system instead of simplifying it. Lower friction encourages more participation, more experimentation, and more frequent decisions.</p>
+          <p>AI is likely to push this pattern into the decision layer. If research, coding, surveillance review, and execution analysis become cheaper, firms will not stop at doing the same work with fewer resources. They will run more scenarios, maintain more strategy variants, monitor more instruments, personalize more client workflows, and react more often to new information.</p>
+          <p>The result is likely to be more model-generated recommendations, more order-flow variation, and more operational events to supervise. AI may lower the unit cost of financial decision support while increasing total demand for robust data, compute, controls, and market infrastructure.</p>
+
+          <h3>What This Means for Market Design</h3>
+          <ul>
+            <li>Execution quality and routing governance become more important, not less, as decision volume rises.</li>
+            <li>Model risk management moves closer to core production operations, alongside traditional trading controls.</li>
+            <li>Resilience tools such as kill switches, replay testing, audit trails, and version control become baseline requirements.</li>
+            <li>Regulatory focus is likely to widen from venue rules and disclosures to the governance of model-driven workflows.</li>
+          </ul>
+          <p>The practical implication is that AI in equity markets should be treated as a capacity-expanding force, not only a labor-saving force. The firms most likely to benefit will be those that combine AI efficiency with disciplined controls, clear accountability, and resilient infrastructure.</p>
         </div>
         <figure class="chapter__media">
           <img loading="lazy" src="images_copy/chapters/chapter-20.svg" alt="Illustration for Chapter 20: Technology’s Arc and Equity’s Future">

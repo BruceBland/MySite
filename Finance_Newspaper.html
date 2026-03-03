@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Latest finance news headlines from Google News RSS, displayed in the Bruce Bland site style."
+    />
+    <title>Finance Newspaper | Latest Finance News</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260219-1" />
+    <style>
+      .news-search-panel {
+        margin: 1rem 0 1.2rem;
+        padding: 1rem;
+      }
+
+      .news-search-label {
+        display: block;
+        margin-bottom: 0.55rem;
+        font-weight: 600;
+      }
+
+      .news-search-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .news-search-input {
+        flex: 1 1 18rem;
+        min-width: 14rem;
+        padding: 0.72rem 0.95rem;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.16);
+        background: rgba(255, 255, 255, 0.85);
+        color: inherit;
+        font: inherit;
+      }
+
+      .news-search-status {
+        margin-top: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
+    <header class="site-header">
+      <nav class="nav container">
+        <a class="brand" href="index.html">Bruce Bland</a>
+        <div class="nav-links">
+          <a href="index.html#about">About</a>
+          <a href="index.html#highlights">Highlights</a>
+          <a href="AI_Newspaper1.html">AI Newspaper</a>
+          <a href="games.html">Games</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero container reveal">
+        <p class="eyebrow">Finance News Feed</p>
+        <h1>Latest Finance News From Google RSS (Last 7 Days)</h1>
+        <div class="hero-actions">
+          <a
+            class="btn btn-primary"
+            href="https://news.google.com/rss/search?q=brokerage+OR+banking+OR+%22wall+street%22+OR+FTSE100+OR+Nasdaq+-mortgage+-mortgages+when:7d&amp;hl=en-US&amp;gl=US&amp;ceid=US:en"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Open Google Feed</a
+          >
+          <a class="btn btn-secondary" id="refreshNews" href="#">Refresh News</a>
+        </div>
+      </section>
+
+      <section class="section container reveal">
+        <div class="section-head">
+          <h2>Finance Newspaper</h2>
+        </div>
+        <p class="muted">
+          Articles from the last 7 days open in a new tab and link directly to the source.
+        </p>
+        <form id="newsSearchForm" class="card glass news-search-panel" role="search">
+          <label class="news-search-label" for="newsKeyword"
+            >Search loaded headlines by keyword</label
+          >
+          <div class="news-search-controls">
+            <input
+              id="newsKeyword"
+              class="news-search-input"
+              type="search"
+              value=""
+              placeholder="Enter keyword"
+              autocomplete="off"
+            />
+            <button class="btn btn-secondary" id="clearNewsSearch" type="button">
+              Show All
+            </button>
+          </div>
+          <p id="newsSearchStatus" class="muted news-search-status">
+            Searches the already-loaded headlines on this page.
+          </p>
+        </form>
+        <div id="newsContainer" class="grid" aria-live="polite"></div>
+        <p id="errorMessage" class="muted" hidden>
+          Unable to load the Google RSS feed right now.
+        </p>
+      </section>
+    </main>
+
+    <script src="script.js?v=20260219-1"></script>
+    <script>
+      const GOOGLE_RSS_URL = "https://news.google.com/rss/search?q=brokerage+OR+banking+OR+%22wall+street%22+OR+FTSE100+OR+Nasdaq+-mortgage+-mortgages+when:7d&hl=en-US&gl=US&ceid=US:en";
+      const FEED_ENDPOINTS = [
+        {
+          type: "xml",
+          url: "https://api.allorigins.win/get?url=" + encodeURIComponent(GOOGLE_RSS_URL),
+        },
+        {
+          type: "xml",
+          url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(GOOGLE_RSS_URL),
+        },
+        {
+          type: "xml",
+          url:
+            "https://r.jina.ai/http://news.google.com/rss/search?q=brokerage+OR+banking+OR+%22wall+street%22+OR+FTSE100+OR+Nasdaq+-mortgage+-mortgages+when:7d&hl=en-US&gl=US&ceid=US:en",
+        },
+        {
+          type: "xml",
+          url: GOOGLE_RSS_URL,
+        },
+        {
+          type: "rss2json",
+          url: "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(GOOGLE_RSS_URL),
+        },
+      ];
+      const MAX_NEWS_ITEMS = 100;
+      const MAX_FETCH_ITEMS = 500;
+      const RECENT_ARTICLE_WINDOW_DAYS = 7;
+      const RECENT_ARTICLE_WINDOW_MS = RECENT_ARTICLE_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+      const DEFAULT_NEWS_KEYWORD = "";
+
+      const newsContainer = document.getElementById("newsContainer");
+      const errorMessage = document.getElementById("errorMessage");
+      const refreshNewsButton = document.getElementById("refreshNews");
+      const newsSearchForm = document.getElementById("newsSearchForm");
+      const newsKeywordInput = document.getElementById("newsKeyword");
+      const clearNewsSearchButton = document.getElementById("clearNewsSearch");
+      const newsSearchStatus = document.getElementById("newsSearchStatus");
+      let lastLoadedNewsItems = [];
+
+      const renderLoadingCards = () => {
+        newsContainer.textContent = "";
+
+        for (let i = 0; i < 4; i += 1) {
+          const card = document.createElement("article");
+          card.className = "card";
+
+          const source = document.createElement("p");
+          source.className = "eyebrow";
+          source.textContent = "Loading";
+
+          const headline = document.createElement("h3");
+          headline.textContent = "Loading latest finance headlines...";
+
+          const meta = document.createElement("p");
+          meta.className = "muted";
+          meta.textContent = "Please wait";
+
+          card.append(source, headline, meta);
+          newsContainer.append(card);
+        }
+      };
+
+      const formatPubDate = (value) => {
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) {
+          return value || "";
+        }
+
+        return parsed.toLocaleString([], {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        });
+      };
+
+      const parsePubDateMs = (value) => {
+        const parsed = new Date(value);
+        const time = parsed.getTime();
+        return Number.isNaN(time) ? null : time;
+      };
+
+      const filterRecentItems = (items) => {
+        const nowMs = Date.now();
+
+        return items
+          .filter((item) => Number.isFinite(item.pubDateMs) && nowMs - item.pubDateMs <= RECENT_ARTICLE_WINDOW_MS)
+          .sort((a, b) => b.pubDateMs - a.pubDateMs)
+          .slice(0, MAX_NEWS_ITEMS);
+      };
+
+      const filterItemsByKeyword = (items, keyword) => {
+        const normalizedKeyword = String(keyword || "").trim().toLowerCase();
+
+        if (!normalizedKeyword) {
+          return items.slice();
+        }
+
+        return items.filter((item) => {
+          const haystack = [item.title, item.source].join(" ").toLowerCase();
+          return haystack.includes(normalizedKeyword);
+        });
+      };
+
+      const updateNewsSearchStatus = (visibleCount, totalCount, keyword) => {
+        const normalizedKeyword = String(keyword || "").trim();
+
+        if (!totalCount) {
+          newsSearchStatus.textContent = "Search will be available after headlines load.";
+          return;
+        }
+
+        if (normalizedKeyword) {
+          newsSearchStatus.textContent =
+            'Showing ' +
+            visibleCount +
+            " of " +
+            totalCount +
+            ' loaded headlines for keyword "' +
+            normalizedKeyword +
+            '".';
+          return;
+        }
+
+        newsSearchStatus.textContent =
+          "Showing all " + totalCount + " loaded headlines from the last 7 days.";
+      };
+
+      const applyNewsSearch = () => {
+        const keyword = newsKeywordInput.value;
+        const filteredItems = filterItemsByKeyword(lastLoadedNewsItems, keyword);
+        const normalizedKeyword = String(keyword || "").trim();
+
+        updateNewsSearchStatus(filteredItems.length, lastLoadedNewsItems.length, normalizedKeyword);
+
+        if (!filteredItems.length && lastLoadedNewsItems.length && normalizedKeyword) {
+          renderNews(filteredItems, {
+            emptyTitle: 'No loaded headlines match "' + normalizedKeyword + '".',
+            emptyMeta: "Try another keyword or click Show All.",
+          });
+          return;
+        }
+
+        renderNews(filteredItems);
+      };
+
+      const normalizeXmlPayload = (payloadText) => {
+        const text = String(payloadText || "").trim();
+        if (!text) {
+          return "";
+        }
+
+        const xmlDeclIdx = text.indexOf("<?xml");
+        if (xmlDeclIdx >= 0) {
+          return text.slice(xmlDeclIdx);
+        }
+
+        const rssIdx = text.indexOf("<rss");
+        if (rssIdx >= 0) {
+          return '<?xml version="1.0" encoding="UTF-8"?>\n' + text.slice(rssIdx);
+        }
+
+        return text;
+      };
+
+      const parseItemsFromXml = (xmlText) => {
+        const normalizedXmlText = normalizeXmlPayload(xmlText);
+        if (!normalizedXmlText) {
+          return [];
+        }
+
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(normalizedXmlText, "text/xml");
+
+        if (xml.querySelector("parsererror")) {
+          return [];
+        }
+
+        const rawItems = Array.from(xml.querySelectorAll("channel > item"));
+        const items = [];
+        const seen = new Set();
+
+        for (const itemNode of rawItems) {
+          const titleNode = itemNode.querySelector("title");
+          const linkNode = itemNode.querySelector("link");
+          const sourceNode = itemNode.querySelector("source");
+          const pubDateNode = itemNode.querySelector("pubDate");
+
+          const fullTitle = (titleNode ? titleNode.textContent : "").trim();
+          const link = (linkNode ? linkNode.textContent : "").trim();
+          const source = (sourceNode ? sourceNode.textContent : "").trim();
+          const pubDate = (pubDateNode ? pubDateNode.textContent : "").trim();
+          const pubDateMs = parsePubDateMs(pubDate);
+
+          if (!fullTitle || !link || seen.has(link)) {
+            continue;
+          }
+          seen.add(link);
+
+          const suffix = source ? " - " + source : "";
+          const title =
+            suffix && fullTitle.endsWith(suffix)
+              ? fullTitle.slice(0, fullTitle.length - suffix.length).trim()
+              : fullTitle;
+
+          items.push({
+            title,
+            source: source || "Google News",
+            link,
+            pubDate: formatPubDate(pubDate),
+            pubDateMs,
+          });
+
+          if (items.length >= MAX_FETCH_ITEMS) {
+            break;
+          }
+        }
+
+        return items;
+      };
+
+      const parseItemsFromRss2Json = (jsonText) => {
+        let data;
+
+        try {
+          data = JSON.parse(jsonText);
+        } catch (error) {
+          return [];
+        }
+
+        if (!data || data.status !== "ok" || !Array.isArray(data.items)) {
+          return [];
+        }
+
+        const items = [];
+        const seen = new Set();
+
+        for (const entry of data.items) {
+          const rawTitle = (entry && entry.title ? String(entry.title) : "").trim();
+          const link = (entry && entry.link ? String(entry.link) : "").trim();
+          const rawDate = (entry && entry.pubDate ? String(entry.pubDate) : "").trim();
+          const pubDateMs = parsePubDateMs(rawDate);
+
+          if (!rawTitle || !link || seen.has(link)) {
+            continue;
+          }
+          seen.add(link);
+
+          let title = rawTitle;
+          let source = "Google News";
+          const separatorIndex = rawTitle.lastIndexOf(" - ");
+
+          if (separatorIndex > 0) {
+            const maybeTitle = rawTitle.slice(0, separatorIndex).trim();
+            const maybeSource = rawTitle.slice(separatorIndex + 3).trim();
+
+            if (maybeTitle) {
+              title = maybeTitle;
+            }
+            if (maybeSource) {
+              source = maybeSource;
+            }
+          }
+
+          items.push({
+            title,
+            source,
+            link,
+            pubDate: formatPubDate(rawDate),
+            pubDateMs,
+          });
+
+          if (items.length >= MAX_FETCH_ITEMS) {
+            break;
+          }
+        }
+
+        return items;
+      };
+
+      const fetchFeedItems = async () => {
+        let lastError;
+        const mergedItems = [];
+        const itemIndexByLink = new Map();
+
+        for (const endpoint of FEED_ENDPOINTS) {
+          try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 12000);
+            let payloadText = "";
+
+            try {
+              const response = await fetch(endpoint.url, {
+                method: "GET",
+                signal: controller.signal,
+              });
+
+              if (!response.ok) {
+                throw new Error("Feed request failed with status " + response.status);
+              }
+
+              payloadText = await response.text();
+            } finally {
+              clearTimeout(timeout);
+            }
+
+            let payload = payloadText;
+            if (endpoint.url.includes("api.allorigins.win/get?")) {
+              try {
+                const wrapped = JSON.parse(payloadText);
+                if (wrapped && typeof wrapped.contents === "string") {
+                  payload = wrapped.contents;
+                }
+              } catch (error) {
+                payload = payloadText;
+              }
+            }
+
+            const parsedItems =
+              endpoint.type === "rss2json"
+                ? parseItemsFromRss2Json(payload)
+                : parseItemsFromXml(payload);
+
+            for (const item of parsedItems) {
+              if (!item || !item.link) {
+                continue;
+              }
+
+              const existingIndex = itemIndexByLink.get(item.link);
+              if (existingIndex === undefined) {
+                itemIndexByLink.set(item.link, mergedItems.length);
+                mergedItems.push(item);
+              } else {
+                const existingItem = mergedItems[existingIndex];
+                if (
+                  !Number.isFinite(existingItem.pubDateMs) &&
+                  Number.isFinite(item.pubDateMs)
+                ) {
+                  mergedItems[existingIndex] = item;
+                }
+              }
+
+              if (mergedItems.length >= MAX_FETCH_ITEMS) {
+                break;
+              }
+            }
+
+            if (mergedItems.length >= MAX_FETCH_ITEMS) {
+              break;
+            }
+          } catch (error) {
+            lastError = error;
+          }
+        }
+
+        if (mergedItems.length > 0) {
+          return mergedItems;
+        }
+
+        throw lastError || new Error("Unable to load feed");
+      };
+
+      const renderNews = (items, options = {}) => {
+        newsContainer.textContent = "";
+        const emptyTitle =
+          options.emptyTitle || "No finance articles found from the last 7 days.";
+        const emptyMeta = options.emptyMeta || "Try Refresh News in a few minutes.";
+
+        if (!items.length) {
+          const card = document.createElement("article");
+          card.className = "card";
+
+          const sourceLabel = document.createElement("p");
+          sourceLabel.className = "eyebrow";
+          sourceLabel.textContent = "Finance Feed";
+
+          const title = document.createElement("h3");
+          title.textContent = emptyTitle;
+
+          const meta = document.createElement("p");
+          meta.className = "muted";
+          meta.textContent = emptyMeta;
+
+          card.append(sourceLabel, title, meta);
+          newsContainer.append(card);
+          return;
+        }
+
+        for (const item of items) {
+          const card = document.createElement("article");
+          card.className = "card";
+
+          const sourceLabel = document.createElement("p");
+          sourceLabel.className = "eyebrow";
+          sourceLabel.textContent = item.source;
+
+          const title = document.createElement("h3");
+          title.textContent = item.title;
+
+          const meta = document.createElement("p");
+          meta.className = "muted";
+          meta.textContent = item.pubDate;
+
+          const link = document.createElement("a");
+          link.className = "btn btn-secondary";
+          link.href = item.link;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = "Read Article";
+
+          card.append(sourceLabel, title, meta, link);
+          newsContainer.append(card);
+        }
+      };
+
+      const refreshNews = async () => {
+        errorMessage.hidden = true;
+        renderLoadingCards();
+        newsSearchStatus.textContent = "Loading headlines to search...";
+
+        try {
+          const items = await fetchFeedItems();
+          lastLoadedNewsItems = filterRecentItems(items);
+          applyNewsSearch();
+        } catch (error) {
+          lastLoadedNewsItems = [];
+          newsContainer.textContent = "";
+          const message = error && error.message ? error.message : "Unknown error";
+          const localHint =
+            window.location.protocol === "file:"
+              ? " Open via a local server URL (http://localhost) to avoid browser CORS limits."
+              : "";
+          errorMessage.textContent =
+            "Unable to load the Google RSS feed right now (" + message + ")." + localHint;
+          errorMessage.hidden = false;
+          updateNewsSearchStatus(0, 0, newsKeywordInput.value);
+        }
+      };
+
+      refreshNewsButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        refreshNews();
+      });
+
+      newsSearchForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        applyNewsSearch();
+      });
+
+      newsKeywordInput.addEventListener("input", () => {
+        applyNewsSearch();
+      });
+
+      clearNewsSearchButton.addEventListener("click", () => {
+        newsKeywordInput.value = "";
+        applyNewsSearch();
+        newsKeywordInput.focus();
+      });
+
+      newsKeywordInput.addEventListener("search", () => {
+        applyNewsSearch();
+      });
+
+      newsKeywordInput.value = DEFAULT_NEWS_KEYWORD;
+
+      refreshNews();
+    </script>
+  </body>
+</html>

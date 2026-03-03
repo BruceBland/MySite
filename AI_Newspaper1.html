@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Latest AI news headlines curated by Matt Wolfe, displayed in the Bruce Bland site style."
+    />
+    <title>AI Newspaper | Latest AI News Curated by Matt Wolfe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260219-1" />
+  </head>
+  <body>
+    <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
+    <header class="site-header">
+      <nav class="nav container">
+        <a class="brand" href="index.html">Bruce Bland</a>
+        <div class="nav-links">
+          <a href="index.html#about">About</a>
+          <a href="index.html#highlights">Highlights</a>
+          <a href="games.html">Games</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero container reveal">
+        <p class="eyebrow">AI News Feed</p>
+        <h1>Latest AI News Curated by Matt Wolfe</h1>
+        <div class="hero-actions">
+          <a
+            class="btn btn-primary"
+            href="https://www.futuretools.io/news"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Open Source Feed</a
+          >
+          <a class="btn btn-secondary" id="refreshNews" href="#">Refresh News</a>
+        </div>
+      </section>
+
+      <section class="section container reveal">
+        <div class="section-head">
+          <h2>AI Newspaper</h2>
+        </div>
+        <p class="muted">
+          Articles open in a new tab and link directly to the original source.
+        </p>
+        <div id="newsContainer" class="grid" aria-live="polite"></div>
+        <p id="errorMessage" class="muted" hidden>
+          Unable to load the live feed right now. You can still view it directly on
+          Future Tools.
+        </p>
+      </section>
+    </main>
+
+    <script src="script.js?v=20260219-1"></script>
+    <script>
+      const FEED_ENDPOINTS = [
+        "https://r.jina.ai/http://www.futuretools.io/news",
+        "https://r.jina.ai/http://futuretools.io/news",
+      ];
+      const MAX_NEWS_ITEMS = 36;
+      const DATE_LINE_PATTERN = /^\d{1,2}\.\d{1,2}\.\d{2}$/;
+
+      const newsContainer = document.getElementById("newsContainer");
+      const errorMessage = document.getElementById("errorMessage");
+      const refreshNewsButton = document.getElementById("refreshNews");
+
+      const renderLoadingCards = () => {
+        newsContainer.textContent = "";
+
+        for (let i = 0; i < 4; i += 1) {
+          const card = document.createElement("article");
+          card.className = "card";
+          const source = document.createElement("p");
+          source.className = "eyebrow";
+          source.textContent = "Loading";
+          const headline = document.createElement("h3");
+          headline.textContent = "Loading latest headlines...";
+          const meta = document.createElement("p");
+          meta.className = "muted";
+          meta.textContent = "Please wait";
+          card.append(source, headline, meta);
+          newsContainer.append(card);
+        }
+      };
+
+      const normalizeUrlForDedupe = (urlValue) => {
+        try {
+          const parsedUrl = new URL(urlValue);
+          parsedUrl.searchParams.delete("utm_source");
+          parsedUrl.searchParams.delete("utm_medium");
+          parsedUrl.hash = "";
+          return parsedUrl.toString();
+        } catch (error) {
+          return urlValue;
+        }
+      };
+
+      const formatDateFromFeed = (dateText) => {
+        const match = dateText.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2})$/);
+        if (!match) {
+          return dateText;
+        }
+
+        const month = Number(match[1]) - 1;
+        const day = Number(match[2]);
+        const year = 2000 + Number(match[3]);
+        const parsedDate = new Date(Date.UTC(year, month, day));
+
+        if (Number.isNaN(parsedDate.getTime())) {
+          return dateText;
+        }
+
+        return parsedDate.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          timeZone: "UTC",
+        });
+      };
+
+      const parseNewsFromMarkdown = (text) => {
+        const lines = text.split(/\r?\n/);
+        const items = [];
+        const seen = new Set();
+        let activeDate = "";
+
+        for (const rawLine of lines) {
+          const line = rawLine.trim();
+
+          if (!line) {
+            continue;
+          }
+
+          if (DATE_LINE_PATTERN.test(line)) {
+            activeDate = line;
+            continue;
+          }
+
+          if (!activeDate || !line.startsWith("[") || !line.includes("](")) {
+            continue;
+          }
+
+          const match = line.match(/^\[(.+?)\]\((https?:\/\/.+)\)$/);
+          if (!match) {
+            continue;
+          }
+
+          const label = match[1].trim();
+          const url = match[2].trim();
+
+          if (!label || !url) {
+            continue;
+          }
+
+          const separatorIndex = label.lastIndexOf(" - ");
+          if (separatorIndex <= 0) {
+            continue;
+          }
+
+          const title = label.slice(0, separatorIndex).trim();
+          const source = label.slice(separatorIndex + 3).trim();
+
+          if (!title || !source) {
+            continue;
+          }
+
+          const dedupeKey = normalizeUrlForDedupe(url);
+          if (seen.has(dedupeKey)) {
+            continue;
+          }
+          seen.add(dedupeKey);
+
+          items.push({
+            title,
+            source,
+            url,
+            dateRaw: activeDate,
+            dateDisplay: formatDateFromFeed(activeDate),
+          });
+
+          if (items.length >= MAX_NEWS_ITEMS) {
+            break;
+          }
+        }
+
+        return items;
+      };
+
+      const getFeedText = async () => {
+        let lastError;
+
+        for (const endpoint of FEED_ENDPOINTS) {
+          try {
+            const response = await fetch(endpoint, {
+              method: "GET",
+              headers: {
+                Accept: "text/plain",
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error("Feed request failed with status " + response.status);
+            }
+
+            const feedText = await response.text();
+            const parsedItems = parseNewsFromMarkdown(feedText);
+
+            if (parsedItems.length > 0) {
+              return parsedItems;
+            }
+          } catch (error) {
+            lastError = error;
+          }
+        }
+
+        throw lastError || new Error("Unable to load feed");
+      };
+
+      const renderNews = (items) => {
+        newsContainer.textContent = "";
+
+        for (const item of items) {
+          const card = document.createElement("article");
+          card.className = "card";
+
+          const sourceLabel = document.createElement("p");
+          sourceLabel.className = "eyebrow";
+          sourceLabel.textContent = item.source;
+
+          const title = document.createElement("h3");
+          title.textContent = item.title;
+
+          const meta = document.createElement("p");
+          meta.className = "muted";
+          meta.textContent = item.dateDisplay;
+
+          const link = document.createElement("a");
+          link.className = "btn btn-secondary";
+          link.href = item.url;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = "Read Article";
+
+          card.append(sourceLabel, title, meta, link);
+          newsContainer.append(card);
+        }
+      };
+
+      const refreshNews = async () => {
+        errorMessage.hidden = true;
+        renderLoadingCards();
+
+        try {
+          const items = await getFeedText();
+
+          renderNews(items);
+        } catch (error) {
+          newsContainer.textContent = "";
+          errorMessage.hidden = false;
+        }
+      };
+
+      refreshNewsButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        refreshNews();
+      });
+      refreshNews();
+    </script>
+  </body>
+</html>
