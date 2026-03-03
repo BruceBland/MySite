@@ -1,6 +1,6 @@
 # Bruce Bland Website
 
-Apple-inspired single-page profile site for **Bruce Bland**, built as a static project for GitHub Pages.
+Multi page website for the profile of **Bruce Bland**, built as a static project for GitHub Pages.
 
 ## Files
 
